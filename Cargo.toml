@@ -42,5 +42,9 @@ debug = true
 path = "pbtc/main.rs"
 name = "pbtc"
 
+[[bin]]
+path = "chainx_btc/main.rs"
+name = "chainx_btc"
+
 [workspace]
 members = ["bencher"]
