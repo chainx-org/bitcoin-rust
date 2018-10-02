@@ -39,6 +39,7 @@ mod utils;
 
 pub use types::LocalNodeRef;
 pub use types::PeersRef;
+pub use local_node::SimpleNode;
 
 use std::sync::Arc;
 use parking_lot::RwLock;

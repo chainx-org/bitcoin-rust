@@ -1,0 +1,14 @@
+[package]
+name = "node"
+version = "0.1.0"
+authors = ["Chainpool <http://chainx.org>"]
+
+[dependencies]
+primitives = { path = "../primitives" }
+storage = { path = "../storage" }
+sync = { path = "../sync" }
+chain = { path = "../chain" }
+miner = { path = "../miner" }
+keys = { path = "../keys" }
+script = { path = "../script" }
+log = "0.4"

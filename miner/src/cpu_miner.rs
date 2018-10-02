@@ -99,6 +99,7 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 	header_bytes.set_time(block.time);
 
 	while extranonce < max_extranonce {
+        info!("extranonce: {:?}", extranonce);
 		extranonce.to_little_endian(&mut extranonce_bytes);
 		// update coinbase transaction with new extranonce
 		coinbase_transaction_builder.set_extranonce(&extranonce_bytes);
@@ -114,6 +115,7 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 
 		for nonce in 0..(u32::max_value() as u64 + 1) {
 			// update §
+            trace!("nonce: {:?}", nonce);
 			header_bytes.set_nonce(nonce as u32);
 			let hash = header_bytes.hash();
 			if is_valid_proof_of_work_hash(block.bits, &hash) {
