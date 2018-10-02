@@ -1,27 +1,21 @@
-use clap::ArgMatches;
-use sync::{create_sync_blocks_writer, Error};
+// Copyright 2018 Chainpool
+
 use config::Config;
 use util::init_db;
+use node::build_block;
+use sync::SimpleNode;
+use std::sync::Arc;
+use miner::MemoryPool;
+use parking_lot::RwLock;
 
 pub fn dev(cfg: Config) -> Result<(), String> {
 	try!(init_db(&cfg));
-	let mut writer = create_sync_blocks_writer(cfg.db, cfg.consensus, cfg.verification_params);
-
-	let mut counter = 0;
-	for blk in blk_dir {
-		match writer.append_block(blk.block) {
-			Ok(_) => {
-				counter += 1;
-				if counter % 1000 == 0 {
-					info!(target: "sync", "Imported {} blocks", counter);
-				}
-			}
-			Err(Error::TooManyOrphanBlocks) => return Err("Too many orphan (unordered) blocks".into()),
-			Err(_) => return Err("Cannot append block".into()),
-		}
+    let memory_pool = Arc::new(RwLock::new(MemoryPool::new()));
+    let node = Arc::new(SimpleNode::new(cfg.consensus, cfg.db.clone(), memory_pool));
+	while true {
+       let block = build_block(node.clone());
+       info!("new block:{:?}", block);
 	}
-
-	info!("Finished import of {} blocks", counter);
 
 	Ok(())
 }

@@ -17,11 +17,14 @@ extern crate script;
 extern crate message;
 extern crate network;
 extern crate p2p;
+extern crate miner;
 extern crate sync;
 extern crate import;
+extern crate parking_lot;
 extern crate rpc as ethcore_rpc;
 extern crate primitives;
 extern crate verification;
+extern crate node;
 
 mod commands;
 mod config;

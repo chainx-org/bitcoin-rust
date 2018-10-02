@@ -6,6 +6,7 @@ authors = ["Parity Technologies <admin@parity.io>"]
 description = "Parity bitcoin client."
 
 [dependencies]
+parking_lot = "0.4"
 log = "0.4"
 env_logger = "0.5"
 app_dirs = { git = "https://github.com/paritytech/app-dirs-rs" }
@@ -17,6 +18,7 @@ message = { path = "message" }
 network = { path = "network" }
 miner = { path = "miner" }
 p2p = { path = "p2p" }
+node = { path = "node" }
 script = { path = "script" }
 storage = { path = "storage" }
 db = { path = "db" }
