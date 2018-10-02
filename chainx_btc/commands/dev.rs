@@ -16,6 +16,7 @@ pub fn dev(cfg: Config) -> Result<(), String> {
 	while true {
        if let Some(block) = build_block(node.clone()) {
            db.insert(block.clone());
+           db.canonize(&block.hash()).expect("Failed to canonize block");
            info!("new block number:{:?}, hash:#{:?}", db.best_block().number, db.best_block().hash);
        } else {
            warn!("build block failed")
