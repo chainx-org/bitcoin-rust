@@ -11,6 +11,8 @@ extern crate network;
 extern crate primitives;
 extern crate serialization as ser;
 extern crate verification;
+#[macro_use]
+extern crate log;
 
 mod block_assembler;
 mod cpu_miner;

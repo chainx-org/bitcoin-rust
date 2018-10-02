@@ -7,6 +7,8 @@ extern crate miner;
 extern crate chain;
 extern crate keys;
 extern crate script;
+#[macro_use]
+extern crate log;
 
 use sync::SimpleNode;
 use std::sync::Arc;
@@ -15,7 +17,7 @@ use primitives::bytes::Bytes;
 use primitives::hash::H256;
 use chain::{merkle_root, IndexedTransaction, Transaction, IndexedBlockHeader,
             TransactionInput, TransactionOutput, IndexedBlock, BlockHeader};
-use keys::AddressHash;
+use keys::{AddressHash, KeyPair};
 use script::Builder;
 use miner::{find_solution, CoinbaseTransactionBuilder};
 
@@ -57,10 +59,14 @@ impl CoinbaseTransactionBuilder for P2shCoinbaseTransactionBuilder {
     }
 }
 
+
+const SECRET_0: &'static str = "5KSCKP8NUyBZPCCQusxRwgmz9sfvJQEgbGukmmHepWw5Bzp95mu";
+
 pub fn build_block(node: Arc<SimpleNode>) -> Option<IndexedBlock> {
     let block_template = node.get_block_template();
-    let hash = Default::default();
-    let coinbase_builder = P2shCoinbaseTransactionBuilder::new(&hash, 10);
+    let kp = KeyPair::from_private(SECRET_0.into()).unwrap();
+    info!("coin base reward: {:?}", kp.public().address_hash());
+    let coinbase_builder = P2shCoinbaseTransactionBuilder::new(&kp.public().address_hash(), 10);
     if let Some(solution) = find_solution(&block_template, coinbase_builder, U256::max_value()) {
 		let coinbase_hash = solution.coinbase_transaction.hash();
 		let mut transactions = vec![IndexedTransaction::new(coinbase_hash, solution.coinbase_transaction)];

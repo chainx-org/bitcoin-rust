@@ -11,3 +11,4 @@ chain = { path = "../chain" }
 miner = { path = "../miner" }
 keys = { path = "../keys" }
 script = { path = "../script" }
+log = "0.4"
