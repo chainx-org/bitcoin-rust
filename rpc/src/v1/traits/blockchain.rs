@@ -25,7 +25,7 @@ build_rpc_trait! {
 		/// Get proof-of-work difficulty as a multiple of the minimum difficulty
 		/// @curl-example: curl --data-binary '{"jsonrpc": "2.0", "method": "getdifficulty", "params": [], "id":1 }' -H 'content-type: application/json' http://127.0.0.1:8332/
 		#[rpc(name = "getdifficulty")]
-		fn difficulty(&self) -> Result<u32, Error>;
+		fn difficulty(&self) -> Result<f64, Error>;
 		/// Get information on given block.
 		/// @curl-example: curl --data-binary '{"jsonrpc": "2.0", "method": "getblock", "params": ["000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"], "id":1 }' -H 'content-type: application/json' http://127.0.0.1:8332/
 		#[rpc(name = "getblock")]

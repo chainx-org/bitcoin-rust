@@ -85,16 +85,18 @@ impl Compact {
 	}
 
 	pub fn to_f64(&self) -> f64 {
-    	let max_body = f64::from(0x00ffff).ln();
-    	let scaland = f64::from(256).ln();
-    	let ln1 = f64::from(self.0 & 0x00ffffff).ln();
-    	let s1 = scaland * f64::from(0x1d - ((self.0 & 0xff000000) >> 24));
-		(max_body - ln1 + s1).exp()
+		let mut shift = (self.0 >> 24) & 0xff;
+		let mut diff = f64::from(0x0000ffffu32) / f64::from(self.0 & 0x00ffffffu32);
+		while shift < 29 {
+			diff *= f64::from(256);
+			shift += 1;
+		}
+		while shift > 29 {
+			diff /= f64::from(256.0);
+			shift -= 1;
+		}
+		diff
 	}
-
-    pub fn to_u32(&self) -> u32 {
-        self.0
-    }
 }
 
 #[cfg(test)]

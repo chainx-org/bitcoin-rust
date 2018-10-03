@@ -27,7 +27,7 @@ pub trait Store: AsSubstore {
 	fn best_header(&self) -> BlockHeader;
 
 	/// get blockchain difficulty
-	fn difficulty(&self) -> u32;
+	fn difficulty(&self) -> f64;
 }
 
 /// Allows casting Arc<Store> to reference to any substore type

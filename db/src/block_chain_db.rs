@@ -562,8 +562,8 @@ impl<T> Store for BlockChainDatabase<T> where T: KeyValueDatabase {
 	}
 
 	/// get blockchain difficulty
-	fn difficulty(&self) -> u32 {
-		self.best_header().bits.to_u32()
+	fn difficulty(&self) -> f64 {
+		self.best_header().bits.to_f64()
 	}
 }
 

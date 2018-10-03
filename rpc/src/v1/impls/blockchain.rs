@@ -25,7 +25,7 @@ pub trait BlockChainClientCoreApi: Send + Sync + 'static {
 	fn best_block_hash(&self) -> GlobalH256;
 	fn block_count(&self) -> u32;
 	fn block_hash(&self, height: u32) -> Option<GlobalH256>;
-	fn difficulty(&self) -> u32;
+	fn difficulty(&self) -> f64;
 	fn raw_block(&self, hash: GlobalH256) -> Option<RawBlock>;
 	fn verbose_block(&self, hash: GlobalH256) -> Option<VerboseBlock>;
 	fn verbose_transaction_out(&self, prev_out: OutPoint) -> Result<GetTxOutResponse, Error>;
@@ -59,7 +59,7 @@ impl BlockChainClientCoreApi for BlockChainClientCore {
 		self.storage.block_hash(height)
 	}
 
-	fn difficulty(&self) -> u32 {
+	fn difficulty(&self) -> f64 {
 		self.storage.difficulty()
 	}
 
@@ -92,7 +92,7 @@ impl BlockChainClientCoreApi for BlockChainClientCore {
 					weight: block_size as u32, // TODO: segwit
 					height: height,
 					mediantime: Some(median_time),
-					difficulty: block.header.raw.bits.to_u32(),
+					difficulty: block.header.raw.bits.to_f64(),
 					chainwork: U256::default(), // TODO: read from storage
 					previousblockhash: Some(block.header.raw.previous_header_hash.clone().into()),
 					nextblockhash: height.and_then(|h| self.storage.block_hash(h + 1).map(|h| h.into())),
@@ -191,7 +191,7 @@ impl<T> BlockChain for BlockChainClient<T> where T: BlockChainClientCoreApi {
 			.ok_or(block_at_height_not_found(height))
 	}
 
-	fn difficulty(&self) -> Result<u32, Error> {
+	fn difficulty(&self) -> Result<f64, Error> {
 		Ok(self.core.difficulty())
 	}
 
