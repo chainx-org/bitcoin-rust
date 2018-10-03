@@ -15,7 +15,6 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tokio::runtime::Runtime;
 use std::thread;
 
-
 pub fn dev(cfg: Config) -> Result<(), String> {
 	try!(init_db(&cfg));
     let memory_pool = Arc::new(RwLock::new(MemoryPool::new()));
