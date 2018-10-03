@@ -19,7 +19,7 @@ const BITCOIN_CASH_MAGIC_REGTEST: u32 = 0xFABFB5DA;
 lazy_static! {
 	static ref MAX_BITS_MAINNET: U256 = "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff".parse()
 		.expect("hardcoded value should parse without errors");
-	static ref MAX_BITS_TESTNET: U256 = "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff".parse()
+	static ref MAX_BITS_TESTNET: U256 = "0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".parse()
 		.expect("hardcoded value should parse without errors");
 	static ref MAX_BITS_REGTEST: U256 = "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff".parse()
 		.expect("hardcoded value should parse without errors");

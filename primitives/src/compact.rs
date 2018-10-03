@@ -91,6 +91,10 @@ impl Compact {
     	let s1 = scaland * f64::from(0x1d - ((self.0 & 0xff000000) >> 24));
 		(max_body - ln1 + s1).exp()
 	}
+
+    pub fn to_u32(&self) -> u32 {
+        self.0
+    }
 }
 
 #[cfg(test)]
