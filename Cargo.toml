@@ -29,6 +29,8 @@ import = { path = "import" }
 logs = { path = "logs" }
 rpc = { path = "rpc" }
 primitives = { path = "primitives" }
+tokio = "0.1"
+exit-future = "0.1"
 
 [profile.dev]
 debug = true

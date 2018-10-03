@@ -1,5 +1,7 @@
 //! chainx bitcoin client for chainx relay testnet.
 
+#![feature(extern_prelude)]
+extern crate exit_future;
 #[macro_use]
 extern crate clap;
 #[macro_use]
@@ -25,6 +27,7 @@ extern crate rpc as core_rpc;
 extern crate primitives;
 extern crate verification;
 extern crate node;
+extern crate tokio;
 extern crate jsonrpc_http_server;
 
 mod commands;
