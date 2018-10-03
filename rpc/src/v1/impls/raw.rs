@@ -8,6 +8,7 @@ use v1::helpers::errors::{execution, invalid_params};
 use chain::Transaction as GlobalTransaction;
 use primitives::bytes::Bytes as GlobalBytes;
 use primitives::hash::H256 as GlobalH256;
+use std::sync::Arc;
 use sync;
 
 pub struct RawClient<T: RawClientCoreApi> {
@@ -22,13 +23,6 @@ pub trait RawClientCoreApi: Send + Sync + 'static {
 pub struct RawClientCore {
 	local_sync_node: sync::LocalNodeRef,
 }
-
-impl RawClientCore {
-	pub fn new(local_sync_node: sync::LocalNodeRef) -> Self {
-		RawClientCore {
-			local_sync_node: local_sync_node,
-		}
-	}
 
 	pub fn do_create_raw_transaction(inputs: Vec<TransactionInput>, outputs: TransactionOutputs, lock_time: Trailing<u32>) -> Result<GlobalTransaction, String> {
 		use chain;
@@ -88,6 +82,33 @@ impl RawClientCore {
 
 		Ok(transaction)
 	}
+
+pub struct SimpleClientCore {
+    simple_node: Arc<sync::SimpleNode>,
+}
+
+impl SimpleClientCore {
+    pub fn new(node: Arc<sync::SimpleNode>) -> Self {
+        SimpleClientCore {
+           simple_node: node,
+        }
+    }
+
+	pub fn do_create_raw_transaction(inputs: Vec<TransactionInput>, outputs: TransactionOutputs, lock_time: Trailing<u32>) -> Result<GlobalTransaction, String> {
+        do_create_raw_transaction(inputs, outputs, lock_time)
+	}
+}
+
+impl RawClientCore {
+	pub fn new(local_sync_node: sync::LocalNodeRef) -> Self {
+		RawClientCore {
+			local_sync_node: local_sync_node,
+		}
+	}
+
+	pub fn do_create_raw_transaction(inputs: Vec<TransactionInput>, outputs: TransactionOutputs, lock_time: Trailing<u32>) -> Result<GlobalTransaction, String> {
+        do_create_raw_transaction(inputs, outputs, lock_time)
+	}
 }
 
 impl RawClientCoreApi for RawClientCore {
@@ -106,6 +127,16 @@ impl<T> RawClient<T> where T: RawClientCoreApi {
 			core: core,
 		}
 	}
+}
+
+impl RawClientCoreApi for SimpleClientCore {
+    fn accept_transaction(&self, transaction: GlobalTransaction) -> Result<GlobalH256, String> {
+        self.simple_node.accept_transaction(transaction)
+    }
+
+    fn create_raw_transaction(&self, inputs: Vec<TransactionInput>, outputs: TransactionOutputs, lock_time: Trailing<u32>) -> Result<GlobalTransaction, String> {
+        SimpleClientCore::do_create_raw_transaction(inputs, outputs, lock_time)
+    }
 }
 
 impl<T> Raw for RawClient<T> where T: RawClientCoreApi {

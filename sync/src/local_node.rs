@@ -77,6 +77,11 @@ impl SimpleNode {
 		let memory_pool = &*self.memory_pool.read();
 		block_assembler.create_new_block(&self.storage, memory_pool, time::get_time().sec as u32, &self.consensus)
 	}
+
+    /// Verify and then schedule new transaction
+    pub fn accept_transaction(&self, transaction: Transaction) -> Result<H256, String> {
+        unreachable!();
+    }
 }
 
 impl<T, U, V> LocalNode<T, U, V> where T: TaskExecutor, U: Server, V: Client {
