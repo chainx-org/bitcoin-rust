@@ -115,7 +115,6 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 
 		for nonce in 0..(u32::max_value() as u64 + 1) {
 			// update §
-            trace!("nonce: {:?}", nonce);
 			header_bytes.set_nonce(nonce as u32);
 			let hash = header_bytes.hash();
 			if is_valid_proof_of_work_hash(block.bits, &hash) {

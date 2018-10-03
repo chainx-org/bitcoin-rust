@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 use rpc_apis::{self, ApiSet};
-use ethcore_rpc::{Server, start_http, MetaIoHandler, Compatibility, Remote};
+use core_rpc::{Server, start_http, MetaIoHandler, Compatibility, Remote};
 use network::Network;
 use std::io;
 use sync;
