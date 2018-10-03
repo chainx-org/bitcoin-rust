@@ -21,10 +21,11 @@ extern crate miner;
 extern crate sync;
 extern crate import;
 extern crate parking_lot;
-extern crate rpc as ethcore_rpc;
+extern crate rpc as core_rpc;
 extern crate primitives;
 extern crate verification;
 extern crate node;
+extern crate jsonrpc_http_server;
 
 mod commands;
 mod config;
