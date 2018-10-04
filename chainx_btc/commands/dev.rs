@@ -5,15 +5,20 @@ use util::init_db;
 use node::build_block;
 use sync::SimpleNode;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
+use std::thread;
 use miner::MemoryPool;
 use parking_lot::RwLock;
-use core_rpc::{ MetaIoHandler, Compatibility, Remote };
+use core_rpc::{ MetaIoHandler, Compatibility };
 use core_rpc::v1::{ BlockChain, BlockChainClient, BlockChainClientCore,
                RawClient, SimpleClientCore, Raw };
-use jsonrpc_http_server::{ self, ServerBuilder, Server };
+use jsonrpc_http_server::ServerBuilder;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use tokio::runtime::Runtime;
-use std::thread;
+use tokio::timer::Interval;
+use tokio::prelude::{Stream, Future};
+use std::sync::atomic::{AtomicBool, Ordering};
+const TIMER_INTERVAL_MS: u64 = 2 * 60 * 1000;
 
 pub fn dev(cfg: Config) -> Result<(), String> {
 	try!(init_db(&cfg));
@@ -29,20 +34,27 @@ pub fn dev(cfg: Config) -> Result<(), String> {
     let _server = ServerBuilder::new(handler).start_http(&socket);
     let (exit_send, exit) = exit_future::signal();
     let mut runtime = Runtime::new().expect("failed to start runtime on current thread");
-
+    let interval = Interval::new(Instant::now(), Duration::from_millis(TIMER_INTERVAL_MS));
+    let running = Arc::new(AtomicBool::new(true));
+    let r = running.clone();
+    let work = interval.map_err(|e| debug!("Timer error: {:?}", e)).for_each(move |_| {
+      r.store(false, Ordering::SeqCst); 
+      Ok(())
+    });
     let child = thread::spawn(move || {
-			while true {
-			   if let Some(block) = build_block(node.clone()) {
-				   db.insert(block.clone());
-				   db.canonize(&block.hash()).expect("Failed to canonize block");
-				   info!("new block number:{:?}, hash:#{:?}", db.best_block().number, db.best_block().hash);
-			   } else {
-				   warn!("build block failed")
-			   }
-			}
+        loop {
+             if let Some(block) = build_block(node.clone(), running.clone()) {
+                 db.insert(block.clone()).unwrap();
+                 db.canonize(&block.hash()).expect("Failed to canonize block");
+                 info!("new block number:{:?}, hash:#{:?}", db.best_block().number, db.best_block().hash);
+              } else {
+                 warn!("build block failed")
+             }
+             running.store(true, Ordering::SeqCst);
+        }
    });
-
    child.join().expect("Couldn't join on the associated thread");
+   let _ = runtime.block_on(exit.until(work).map(|_| ()));
    exit_send.fire();
    Ok(())
 }

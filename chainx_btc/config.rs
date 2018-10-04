@@ -96,8 +96,6 @@ pub fn parse(matches: &clap::ArgMatches) -> Result<Config, String> {
 		None => None,
 	};
 
-    let seednodes = vec![];
-    /*
 	let seednodes: Vec<String> = match matches.value_of("seednode") {
 		Some(s) => vec![s.parse().map_err(|_| "Invalid seednode".to_owned())?],
 		None => match (network, &consensus.fork) {
@@ -107,7 +105,7 @@ pub fn parse(matches: &clap::ArgMatches) -> Result<Config, String> {
 			(Network::Testnet, _) => testnet_seednodes().into_iter().map(Into::into).collect(),
 			(Network::Other(_), _) | (Network::Regtest, _) | (Network::Unitest, _) => Vec::new(),
 		},
-	};*/
+	};
 
 	let only_net = match matches.value_of("only-net") {
 		Some(s) => s.parse()?,
