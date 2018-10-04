@@ -39,7 +39,7 @@ mod rpc_apis;
 
 use app_dirs::AppInfo;
 
-pub const APP_INFO: AppInfo = AppInfo { name: "pbtc", author: "Parity" };
+pub const APP_INFO: AppInfo = AppInfo { name: "chainx_btc", author: "Chainpool" };
 pub const PROTOCOL_VERSION: u32 = 70_014;
 pub const PROTOCOL_MINIMUM: u32 = 70_001;
 pub const USER_AGENT: &'static str = "pbtc";
@@ -72,8 +72,8 @@ fn run() -> Result<(), String> {
 
 	match matches.subcommand() {
 		("import", Some(import_matches)) => commands::import(cfg, import_matches),
-		("start", None) => commands::start(cfg),
 		("rollback", Some(rollback_matches)) => commands::rollback(cfg, rollback_matches),
-		_ => commands::dev(cfg),
+		("dev", _) => commands::dev(cfg),
+		_ => commands::start(cfg),
 	}
 }
