@@ -121,6 +121,7 @@ use types::{PeerIndex, ClientCoreRef, SynchronizationStateRef, EmptyBoxFuture, S
 
 /// Synchronization client trait
 pub trait Client : Send + Sync + 'static {
+    fn spawn_block(&self, block: IndexedBlock);
 	fn on_connect(&self, peer_index: PeerIndex);
 	fn on_disconnect(&self, peer_index: PeerIndex);
 	fn on_inventory(&self, peer_index: PeerIndex, message: types::Inv);
@@ -146,6 +147,10 @@ pub struct SynchronizationClient<T: TaskExecutor, U: Verifier> {
 }
 
 impl<T, U> Client for SynchronizationClient<T, U> where T: TaskExecutor, U: Verifier {
+    fn spawn_block(&self, block: IndexedBlock) {
+		self.core.lock().spawn_block(block);
+    }
+
 	fn on_connect(&self, peer_index: PeerIndex) {
 		self.core.lock().on_connect(peer_index);
 	}

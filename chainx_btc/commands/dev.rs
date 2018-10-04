@@ -44,7 +44,7 @@ pub fn dev(cfg: Config) -> Result<(), String> {
     });
     let child = thread::spawn(move || {
         loop {
-             if let Some(block) = build_block(node.clone(), running.clone()) {
+             if let Some(block) = build_block(node.clone().get_block_template(), running.clone()) {
                  db.insert(block.clone()).unwrap();
                  db.canonize(&block.hash()).expect("Failed to canonize block");
                  info!("new block number:{:?}, hash:#{:?}", db.best_block().number, db.best_block().hash);

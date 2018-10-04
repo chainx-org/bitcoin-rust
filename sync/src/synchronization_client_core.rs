@@ -1069,6 +1069,10 @@ impl<T> SynchronizationClientCore<T> where T: TaskExecutor {
 		}
 	}
 
+    pub fn spawn_block(&mut self, block: IndexedBlock) {
+        self.chain.insert_best_block(block).unwrap();
+    }
+
 	fn on_block_verification_success(&mut self, block: IndexedBlock) -> Option<Vec<VerificationTask>> {
 		// update block processing speed
 		self.block_speed_meter.checkpoint();

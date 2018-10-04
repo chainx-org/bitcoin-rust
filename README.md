@@ -31,7 +31,7 @@ Gitter [![Gitter https://gitter.im/paritytech/parity-bitcoin](https://badges.git
 
 ## Installing from source
 
-Installing `pbtc` from source requires `rustc` and `cargo`.
+Installing `chainx_btc` from source requires `rustc` and `cargo`.
 
 Minimal supported version is `rustc 1.23.0 (766bd11c8 2018-01-01)`
 
@@ -56,28 +56,28 @@ sudo apt-get update
 sudo apt-get install build-essential
 ```
 
-#### Clone and build pbtc
+#### Clone and build chainx_btc
 
-Now let's clone `pbtc` and enter it's directory:
-
-```
-git clone https://github.com/paritytech/parity-bitcoin
-cd parity-bitcoin
-```
-
-`pbtc` can be build in two modes. `--debug` and `--release`. Debug is the default.
+Now let's clone `chainx_btc` and enter it's directory:
 
 ```
-# builds pbtc in debug mode
-cargo build -p pbtc
+git clone https://github.com/chainx-org/bitcoin-relay
+cd bitcoin-relay
+```
+
+`chainx_btc` can be build in two modes. `--debug` and `--release`. Debug is the default.
+
+```
+# builds chainx_btc in debug mode
+cargo build
 ```
 
 ```
-# builds pbtc in release mode
-cargo build -p pbtc --release
+# builds chainx_btc in release mode
+cargo build --release
 ```
 
-`pbtc` is now available at either `./target/debug/pbtc` or `./target/release/pbtc`.
+`chainx_btc` is now available at either `./target/debug/chainx_btc` or `./target/release/chainx_btc`.
 
 ## Installing the snap
 
@@ -89,7 +89,7 @@ sudo snap install parity-bitcoin --edge
 
 ## Running tests
 
-`pbtc` has internal unit tests and it conforms to external integration tests.
+`chainx_btc` has internal unit tests and it conforms to external integration tests.
 
 #### Running unit tests
 
@@ -97,34 +97,6 @@ Assuming that repository is already cloned, we can run unit tests with this comm
 
 ```
 cargo test --all
-```
-
-#### Running external integration tests
-
-Running integration tests is automated, as the regtests repository is one of the submodules. Let's download it first:
-
-```
-git submodule update --init
-```
-
-Now we can run them:
-
-```
-./tools/regtests.sh
-```
-
-It's also possible to run regtests manually:
-
-```
-# let's start pbtc in regtest compatible mode
-./target/release/pbtc --btc --regtest
-
-# now in second shell window
-cd $HOME
-git clone https://github.com/TheBlueMatt/test-scripts
-cd test-scripts
-java -jar pull-tests-f56eec3.jar
-
 ```
 
 ## Going online

@@ -10,7 +10,6 @@ extern crate script;
 #[macro_use]
 extern crate log;
 
-use sync::SimpleNode;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use primitives::bigint::{U256, Uint};
@@ -20,7 +19,7 @@ use chain::{merkle_root, IndexedTransaction, Transaction, IndexedBlockHeader,
             TransactionInput, TransactionOutput, IndexedBlock, BlockHeader};
 use keys::{AddressHash, KeyPair};
 use script::Builder;
-use miner::{find_solution, CoinbaseTransactionBuilder};
+use miner::{BlockTemplate, find_solution, CoinbaseTransactionBuilder};
 
 pub struct P2shCoinbaseTransactionBuilder {
     transaction: Transaction,
@@ -63,8 +62,7 @@ impl CoinbaseTransactionBuilder for P2shCoinbaseTransactionBuilder {
 
 const SECRET_0: &'static str = "5KSCKP8NUyBZPCCQusxRwgmz9sfvJQEgbGukmmHepWw5Bzp95mu";
 
-pub fn build_block(node: Arc<SimpleNode>, running: Arc<AtomicBool>) -> Option<IndexedBlock> {
-    let block_template = node.get_block_template();
+pub fn build_block(block_template: BlockTemplate, running: Arc<AtomicBool>) -> Option<IndexedBlock> {
     let kp = KeyPair::from_private(SECRET_0.into()).unwrap();
     info!("coin base reward: {:?}", kp.public().address_hash());
     let coinbase_builder = P2shCoinbaseTransactionBuilder::new(&kp.public().address_hash(), 10);

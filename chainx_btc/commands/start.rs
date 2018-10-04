@@ -1,3 +1,5 @@
+// Copyright 2018 Chainpool
+
 use std::net::SocketAddr;
 use std::thread;
 use std::sync::Arc;
@@ -8,6 +10,12 @@ use primitives::hash::H256;
 use util::{init_db, node_table_path};
 use {config, p2p, PROTOCOL_VERSION, PROTOCOL_MINIMUM};
 use super::super::rpc;
+use tokio::timer::Interval;
+use tokio::prelude::Stream;
+use std::time::{Duration, Instant};
+use node::build_block;
+
+const TIMER_INTERVAL_MS: u64 = 60 * 1000;
 
 enum BlockNotifierTask {
 	NewBlock(H256),
@@ -121,13 +129,35 @@ pub fn start(cfg: config::Config) -> Result<(), String> {
 	let rpc_deps = rpc::Dependencies {
 		network: cfg.network,
 		storage: cfg.db,
-		local_sync_node: local_sync_node,
+		local_sync_node: local_sync_node.clone(),
 		p2p_context: p2p.context().clone(),
 		remote: el.remote(),
 	};
 	let _rpc_server = try!(rpc::new_http(cfg.rpc_config, rpc_deps));
+    
+    let interval = Interval::new(Instant::now() + Duration::from_millis(TIMER_INTERVAL_MS), Duration::from_millis(TIMER_INTERVAL_MS));
+        let running = Arc::new(AtomicBool::new(true));
+    let r = running.clone();
+    let work = interval.map_err(|e| debug!("Timer error: {:?}", e)).for_each(move |_| {
+      trace!("interval store false");
+      r.store(false, Ordering::SeqCst); 
+      Ok(())
+    });
+    let child = thread::spawn(move || {
+        loop {
+             if let Some(block) = build_block(local_sync_node.get_block_template(), running.clone()) {
+                 local_sync_node.spawn_block(block);
+             } else {
+                 info!("build block failed")
+             }
+             running.store(true, Ordering::SeqCst);
+             trace!("store true");
+        }
+   });   
+   el.handle().spawn(work);
 
 	try!(p2p.run().map_err(|_| "Failed to start p2p module"));
 	el.run(p2p::forever()).unwrap();
+    child.join().expect("Couldn't join on the associated thread");
 	Ok(())
 }
