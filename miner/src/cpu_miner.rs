@@ -8,6 +8,8 @@ use crypto::dhash256;
 use ser::Stream;
 use verification::is_valid_proof_of_work_hash;
 use block_assembler::BlockTemplate;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 /// Instead of serializing `BlockHeader` from scratch over and over again,
 /// let's keep it serialized in memory and replace needed bytes
@@ -90,7 +92,7 @@ pub struct Solution {
 /// and solution still hasn't been found it returns None.
 /// It's possible to also experiment with time, but I find it pointless
 /// to implement on CPU.
-pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder: T, max_extranonce: U256) -> Option<Solution> where T: CoinbaseTransactionBuilder {
+pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder: T, max_extranonce: U256, running: Arc<AtomicBool>) -> Option<Solution> where T: CoinbaseTransactionBuilder {
 	let mut extranonce = U256::default();
 	let mut extranonce_bytes = [0u8; 32];
 
@@ -114,7 +116,9 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 		header_bytes.set_merkle_root_hash(&merkle_root_hash);
 
 		for nonce in 0..(u32::max_value() as u64 + 1) {
-			// update §
+            if running.load(Ordering::SeqCst) == false {
+                return None;
+            }
 			header_bytes.set_nonce(nonce as u32);
 			let hash = header_bytes.hash();
 			if is_valid_proof_of_work_hash(block.bits, &hash) {
@@ -128,7 +132,6 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 				return Some(solution);
 			}
 		}
-
 		extranonce = extranonce + 1.into();
 	}
 
@@ -145,6 +148,7 @@ mod tests {
 	use keys::AddressHash;
 	use script::Builder;
 	use super::{find_solution, CoinbaseTransactionBuilder};
+    use std::sync::atomic::AtomicBool;
 
 	pub struct P2shCoinbaseTransactionBuilder {
 		transaction: Transaction,
@@ -200,7 +204,8 @@ mod tests {
 
 		let hash = Default::default();
 		let coinbase_builder = P2shCoinbaseTransactionBuilder::new(&hash, 10);
-		let solution = find_solution(&block_template, coinbase_builder, U256::max_value());
+        let running = Arc::new(AtomicBool::new(true));
+		let solution = find_solution(&block_template, coinbase_builder, U256::max_value(), running);
 		assert!(solution.is_some());
 	}
 }

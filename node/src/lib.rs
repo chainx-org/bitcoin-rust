@@ -12,6 +12,7 @@ extern crate log;
 
 use sync::SimpleNode;
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use primitives::bigint::{U256, Uint};
 use primitives::bytes::Bytes;
 use primitives::hash::H256;
@@ -62,12 +63,12 @@ impl CoinbaseTransactionBuilder for P2shCoinbaseTransactionBuilder {
 
 const SECRET_0: &'static str = "5KSCKP8NUyBZPCCQusxRwgmz9sfvJQEgbGukmmHepWw5Bzp95mu";
 
-pub fn build_block(node: Arc<SimpleNode>) -> Option<IndexedBlock> {
+pub fn build_block(node: Arc<SimpleNode>, running: Arc<AtomicBool>) -> Option<IndexedBlock> {
     let block_template = node.get_block_template();
     let kp = KeyPair::from_private(SECRET_0.into()).unwrap();
     info!("coin base reward: {:?}", kp.public().address_hash());
     let coinbase_builder = P2shCoinbaseTransactionBuilder::new(&kp.public().address_hash(), 10);
-    if let Some(solution) = find_solution(&block_template, coinbase_builder, U256::max_value()) {
+    if let Some(solution) = find_solution(&block_template, coinbase_builder, U256::max_value(), running) {
 		let coinbase_hash = solution.coinbase_transaction.hash();
 		let mut transactions = vec![IndexedTransaction::new(coinbase_hash, solution.coinbase_transaction)];
 		transactions.extend(block_template.transactions.iter().map(|tx| tx.clone()));
