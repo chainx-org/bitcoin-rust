@@ -34,10 +34,11 @@ pub fn dev(cfg: Config) -> Result<(), String> {
     let _server = ServerBuilder::new(handler).start_http(&socket);
     let (exit_send, exit) = exit_future::signal();
     let mut runtime = Runtime::new().expect("failed to start runtime on current thread");
-    let interval = Interval::new(Instant::now(), Duration::from_millis(TIMER_INTERVAL_MS));
+    let interval = Interval::new(Instant::now() + Duration::from_millis(TIMER_INTERVAL_MS), Duration::from_millis(TIMER_INTERVAL_MS));
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
     let work = interval.map_err(|e| debug!("Timer error: {:?}", e)).for_each(move |_| {
+      trace!("interval store false");
       r.store(false, Ordering::SeqCst); 
       Ok(())
     });
@@ -47,14 +48,15 @@ pub fn dev(cfg: Config) -> Result<(), String> {
                  db.insert(block.clone()).unwrap();
                  db.canonize(&block.hash()).expect("Failed to canonize block");
                  info!("new block number:{:?}, hash:#{:?}", db.best_block().number, db.best_block().hash);
-              } else {
-                 warn!("build block failed")
+             } else {
+                 info!("build block failed")
              }
              running.store(true, Ordering::SeqCst);
+             trace!("store true");
         }
    });
-   child.join().expect("Couldn't join on the associated thread");
    let _ = runtime.block_on(exit.until(work).map(|_| ()));
    exit_send.fire();
+   child.join().expect("Couldn't join on the associated thread");
    Ok(())
 }
