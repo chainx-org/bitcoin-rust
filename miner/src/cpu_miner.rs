@@ -101,7 +101,7 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 	header_bytes.set_time(block.time);
 
 	while extranonce < max_extranonce {
-        info!("extranonce: {:?}", extranonce);
+        trace!("extranonce: {:?}", extranonce);
 		extranonce.to_little_endian(&mut extranonce_bytes);
 		// update coinbase transaction with new extranonce
 		coinbase_transaction_builder.set_extranonce(&extranonce_bytes);
