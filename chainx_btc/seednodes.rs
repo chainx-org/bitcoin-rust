@@ -20,11 +20,11 @@ pub fn mainnet_seednodes() -> Vec<&'static str> {
 
 pub fn testnet_seednodes() -> Vec<&'static str> {
 	vec![
-		"testnet-seed.bitcoin.jonasschnelli.ch:18333",
+		/*("testnet-seed.bitcoin.jonasschnelli.ch:18333",
 		"seed.tbtc.petertodd.org:18333",
 		"testnet-seed.bluematt.me:18333",
 		"testnet-seed.bitcoin.schildbach.de:18333",
-		"testnet-seed.voskuil.org:18333",
+		"testnet-seed.voskuil.org:18333",*/
 	]
 }
 

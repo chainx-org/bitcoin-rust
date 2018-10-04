@@ -79,7 +79,7 @@ impl SimpleNode {
 	}
 
     /// Verify and then schedule new transaction
-    pub fn accept_transaction(&self, transaction: Transaction) -> Result<H256, String> {
+    pub fn accept_transaction(&self, _transaction: Transaction) -> Result<H256, String> {
         unreachable!();
     }
 }
@@ -329,6 +329,10 @@ impl<T, U, V> LocalNode<T, U, V> where T: TaskExecutor, U: Server, V: Client {
 	pub fn install_sync_listener(&self, listener: SyncListenerRef) {
 		self.client.install_sync_listener(listener);
 	}
+    
+    pub fn spawn_block(&self, block: IndexedBlock) {
+        self.client.spawn_block(block);
+    }
 }
 
 impl TransactionAcceptSink {

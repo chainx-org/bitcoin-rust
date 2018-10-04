@@ -8,7 +8,7 @@ pub const MAX_COINBASE_SIZE: usize = 100;
 pub const RETARGETING_FACTOR: u32 = 4;
 pub const TARGET_SPACING_SECONDS: u32 = 10 * 60;
 //pub const DOUBLE_SPACING_SECONDS: u32 = 2 * TARGET_SPACING_SECONDS;
-pub const DOUBLE_SPACING_SECONDS: u32 = TARGET_SPACING_SECONDS / 2;
+pub const DOUBLE_SPACING_SECONDS: u32 = TARGET_SPACING_SECONDS / 10;
 pub const TARGET_TIMESPAN_SECONDS: u32 = 2 * 7 * 24 * 60 * 60;
 
 // The upper and lower bounds for retargeting timespan
