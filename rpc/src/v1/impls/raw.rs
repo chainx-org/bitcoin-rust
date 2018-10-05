@@ -2,9 +2,9 @@ use jsonrpc_core::Error;
 use jsonrpc_macros::Trailing;
 use ser::{Reader, serialize, deserialize};
 use v1::traits::Raw;
-use v1::types::{RawTransaction, TransactionInput, TransactionOutput, TransactionOutputs, Transaction, GetRawTransactionResponse};
-use v1::types::H256;
-use v1::helpers::errors::{execution, invalid_params};
+use v1::types::{SignedTransactionOutput, TransactionInputScript, TransactionOutputScript, SignedTransactionInput, Bytes, RawTransaction, TransactionInput, TransactionOutput, TransactionOutputs, Transaction, GetRawTransactionResponse};
+use v1::types::{H256, ScriptType};
+use v1::helpers::errors::{execution, invalid_params, transaction_not_found };
 use chain::Transaction as GlobalTransaction;
 use primitives::bytes::Bytes as GlobalBytes;
 use primitives::hash::H256 as GlobalH256;
@@ -18,6 +18,7 @@ pub struct RawClient<T: RawClientCoreApi> {
 pub trait RawClientCoreApi: Send + Sync + 'static {
 	fn accept_transaction(&self, transaction: GlobalTransaction) -> Result<GlobalH256, String>;
 	fn create_raw_transaction(&self, inputs: Vec<TransactionInput>, outputs: TransactionOutputs, lock_time: Trailing<u32>) -> Result<GlobalTransaction, String>;
+	fn get_raw_transaction(&self, hash: H256, verbose: Trailing<bool>) -> Result<GetRawTransactionResponse, Error>;
 }
 
 pub struct RawClientCore {
@@ -119,6 +120,41 @@ impl RawClientCoreApi for RawClientCore {
 	fn create_raw_transaction(&self, inputs: Vec<TransactionInput>, outputs: TransactionOutputs, lock_time: Trailing<u32>) -> Result<GlobalTransaction, String> {
 		RawClientCore::do_create_raw_transaction(inputs, outputs, lock_time)
 	}
+
+	fn get_raw_transaction(&self, hash: H256, verbose: Trailing<bool>) -> Result<GetRawTransactionResponse, Error> {
+        let ghash: GlobalH256 = hash.clone().into();
+        if let Some(tx) = self.local_sync_node.storage.transaction(&ghash) {
+            let raw_tx = Bytes::new(serialize(&tx).take());
+            if verbose.unwrap_or_default() {
+                let transaction = Transaction {
+                    hex: raw_tx,
+                    txid: hash.clone(), // segwit to do
+                    hash: hash.clone(),
+                    size: 0, // to do
+                    vsize: 0, // to do
+                    version: tx.version,
+                    locktime: tx.lock_time as i32,
+                    vin: tx.inputs.iter().map(|input| SignedTransactionInput{
+                                      txid: H256::from(input.clone().previous_output.hash.take()),
+                                      vout: input.previous_output.index,
+                                      script_sig: TransactionInputScript{asm: String::new(), hex: Bytes::new(input.clone().script_sig.take()),},
+                                      sequence: input.sequence,
+                                      txinwitness: input.script_witness.iter().map(|bytes| String::from_utf8(bytes.clone().take()).unwrap()).collect::<_>(),}).collect::<_>(),
+                    vout: tx.outputs.iter().map(|output| SignedTransactionOutput{value: output.value as f64, n: 0,// to do
+                                             script: TransactionOutputScript{asm: String::new(), hex: Bytes::new(output.clone().script_pubkey.take()),
+                                             req_sigs: 777, script_type: ScriptType::PubKey, addresses: vec![],},}).collect::<_>(),
+                    blockhash: Default::default(),
+                    confirmations: 0, // to do:tx.is_final_in_block(height, block_time),
+                    time: 0, // to do: block_time,
+                    blocktime: 0, // to do: block_time,
+                };
+                return Ok(GetRawTransactionResponse::Verbose(transaction));
+            } else {
+                return Ok(GetRawTransactionResponse::Raw(raw_tx));
+            }
+        }
+        Err(transaction_not_found(hash))
+	}
 }
 
 impl<T> RawClient<T> where T: RawClientCoreApi {
@@ -137,6 +173,21 @@ impl RawClientCoreApi for SimpleClientCore {
     fn create_raw_transaction(&self, inputs: Vec<TransactionInput>, outputs: TransactionOutputs, lock_time: Trailing<u32>) -> Result<GlobalTransaction, String> {
         SimpleClientCore::do_create_raw_transaction(inputs, outputs, lock_time)
     }
+
+	fn get_raw_transaction(&self, hash: H256, verbose: Trailing<bool>) -> Result<GetRawTransactionResponse, Error> {
+        let hash: GlobalH256 = hash.clone().into();
+        if verbose.unwrap_or_default() {
+          /* if let Some(tx) = self.simple_node.storage.transaction(&hash) {
+              Ok(GetRawTransactionResponse::Verbose(tx))
+           }*/
+        } else {
+           if let Some(tx) = self.simple_node.storage.transaction_bytes(&hash) {
+                let tx = Bytes::new(serialize(&tx).take());
+                return Ok(GetRawTransactionResponse::Raw(tx));
+           }
+        }
+        Err(transaction_not_found(hash))
+	}
 }
 
 impl<T> Raw for RawClient<T> where T: RawClientCoreApi {
@@ -165,9 +216,9 @@ impl<T> Raw for RawClient<T> where T: RawClientCoreApi {
 		rpc_unimplemented!()
 	}
 
-	fn get_raw_transaction(&self, _hash: H256, _verbose: Trailing<bool>) -> Result<GetRawTransactionResponse, Error> {
-		rpc_unimplemented!()
-	}
+	fn get_raw_transaction(&self, hash: H256, verbose: Trailing<bool>) -> Result<GetRawTransactionResponse, Error> {
+        self.core.get_raw_transaction(hash, verbose)
+   	}
 }
 
 #[cfg(test)]
