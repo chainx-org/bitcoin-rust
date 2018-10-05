@@ -128,14 +128,14 @@ impl RawClientCoreApi for RawClientCore {
             if verbose.unwrap_or_default() {
                 let transaction = Transaction {
                     hex: raw_tx,
-                    txid: hash.clone(), // segwit to do
-                    hash: hash.clone(),
+                    txid: hash.clone().reversed(), // segwit to do
+                    hash: hash.clone().reversed(),
                     size: 0, // to do
                     vsize: 0, // to do
                     version: tx.version,
                     locktime: tx.lock_time as i32,
                     vin: tx.inputs.iter().map(|input| SignedTransactionInput{
-                                      txid: H256::from(input.clone().previous_output.hash.take()),
+                                      txid: H256::from(input.clone().previous_output.hash.take()).reversed(),
                                       vout: input.previous_output.index,
                                       script_sig: TransactionInputScript{asm: String::new(), hex: Bytes::new(input.clone().script_sig.take()),},
                                       sequence: input.sequence,
@@ -217,7 +217,7 @@ impl<T> Raw for RawClient<T> where T: RawClientCoreApi {
 	}
 
 	fn get_raw_transaction(&self, hash: H256, verbose: Trailing<bool>) -> Result<GetRawTransactionResponse, Error> {
-        self.core.get_raw_transaction(hash, verbose)
+        self.core.get_raw_transaction(hash.reversed(), verbose)
    	}
 }
 
