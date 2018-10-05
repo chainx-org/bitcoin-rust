@@ -22,7 +22,7 @@ pub struct LocalNode<T: TaskExecutor, U: Server, V: Client> {
 	/// Network we are working on
 	consensus: ConsensusParams,
 	/// Storage reference
-	storage: StorageRef,
+	pub storage: StorageRef,
 	/// Memory pool reference
 	memory_pool: MemoryPoolRef,
 	/// Synchronization peers
@@ -39,7 +39,7 @@ pub struct LocalNode<T: TaskExecutor, U: Server, V: Client> {
 
 pub struct SimpleNode {
     consensus: ConsensusParams,
-    storage: StorageRef,
+    pub storage: StorageRef,
     memory_pool: MemoryPoolRef,
 }
 
