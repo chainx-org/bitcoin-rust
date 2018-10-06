@@ -17,7 +17,6 @@ use primitives::bytes::Bytes;
 use primitives::hash::H256;
 use chain::{merkle_root, IndexedTransaction, Transaction, IndexedBlockHeader, TransactionInput,
             TransactionOutput, IndexedBlock, BlockHeader};
-use keys::{AddressHash, KeyPair};
 use script::Builder;
 use miner::{BlockTemplate, find_solution, CoinbaseTransactionBuilder};
 
@@ -26,7 +25,7 @@ pub struct P2shCoinbaseTransactionBuilder {
 }
 
 impl P2shCoinbaseTransactionBuilder {
-    pub fn new(hash: &AddressHash, value: u64) -> Self {
+    pub fn new(hash: &keys::AddressHash, value: u64) -> Self {
         let script_pubkey = Builder::build_p2sh(hash).into();
         let transaction = Transaction {
             version: 0,
@@ -59,13 +58,19 @@ impl CoinbaseTransactionBuilder for P2shCoinbaseTransactionBuilder {
 }
 
 
-const SECRET_0: &'static str = "5KSCKP8NUyBZPCCQusxRwgmz9sfvJQEgbGukmmHepWw5Bzp95mu";
+const SECRET: &'static str = "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943";
 
 pub fn build_block(
     block_template: BlockTemplate,
     running: Arc<AtomicBool>,
 ) -> Option<IndexedBlock> {
-    let kp = KeyPair::from_private(SECRET_0.into()).unwrap();
+   let private_key = keys::Private {
+       network: keys::Network::Testnet,
+       secret: SECRET.into(),
+       compressed: false,
+    };
+    info!("miner private_key:{:?}", private_key);
+    let kp = keys::KeyPair::from_private(private_key).unwrap();
     info!("coin base reward: {:?}", kp.public().address_hash());
     let coinbase_builder =
         P2shCoinbaseTransactionBuilder::new(&kp.public().address_hash(), 1000000000);

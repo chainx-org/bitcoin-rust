@@ -1190,7 +1190,7 @@ where
 
         // else => verify transaction + it's orphans and then add to the memory pool
         // if any parent transaction is unknown => we have orphan transaction => remember in orphan pool
-        let unknown_parents: HashSet<H256> = transaction
+        /*let unknown_parents: HashSet<H256> = transaction
             .raw
             .inputs
             .iter()
@@ -1202,7 +1202,7 @@ where
             .collect();
         if !unknown_parents.is_empty() {
             return Err(AppendTransactionError::Orphan(unknown_parents));
-        }
+        }*/
 
         // else verify && insert this transaction && all dependent orphans
         let mut transactions: VecDeque<IndexedTransaction> = VecDeque::new();
