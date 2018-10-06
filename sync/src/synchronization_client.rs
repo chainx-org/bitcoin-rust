@@ -7,7 +7,7 @@ use synchronization_verifier::{Verifier, TransactionVerificationSink};
 use synchronization_client_core::{ClientCore, SynchronizationClientCore};
 use types::{PeerIndex, ClientCoreRef, SynchronizationStateRef, EmptyBoxFuture, SyncListenerRef};
 
-#[cfg_attr(feature="cargo-clippy", allow(doc_markdown))]
+#[cfg_attr(feature = "cargo-clippy", allow(doc_markdown))]
 ///! TODO: update with headers-first corrections
 ///!
 ///! Blocks synchronization process:
@@ -120,128 +120,152 @@ use types::{PeerIndex, ClientCoreRef, SynchronizationStateRef, EmptyBoxFuture, S
 ///!
 
 /// Synchronization client trait
-pub trait Client : Send + Sync + 'static {
+pub trait Client: Send + Sync + 'static {
     fn spawn_block(&self, block: IndexedBlock);
-	fn on_connect(&self, peer_index: PeerIndex);
-	fn on_disconnect(&self, peer_index: PeerIndex);
-	fn on_inventory(&self, peer_index: PeerIndex, message: types::Inv);
-	fn on_headers(&self, peer_index: PeerIndex, message: types::Headers);
-	fn on_block(&self, peer_index: PeerIndex, block: IndexedBlock);
-	fn on_transaction(&self, peer_index: PeerIndex, transaction: IndexedTransaction);
-	fn on_notfound(&self, peer_index: PeerIndex, message: types::NotFound);
-	fn after_peer_nearly_blocks_verified(&self, peer_index: PeerIndex, future: EmptyBoxFuture);
-	fn accept_transaction(&self, transaction: Transaction, sink: Box<TransactionVerificationSink>) -> Result<(), String>;
-	fn install_sync_listener(&self, listener: SyncListenerRef);
+    fn on_connect(&self, peer_index: PeerIndex);
+    fn on_disconnect(&self, peer_index: PeerIndex);
+    fn on_inventory(&self, peer_index: PeerIndex, message: types::Inv);
+    fn on_headers(&self, peer_index: PeerIndex, message: types::Headers);
+    fn on_block(&self, peer_index: PeerIndex, block: IndexedBlock);
+    fn on_transaction(&self, peer_index: PeerIndex, transaction: IndexedTransaction);
+    fn on_notfound(&self, peer_index: PeerIndex, message: types::NotFound);
+    fn after_peer_nearly_blocks_verified(&self, peer_index: PeerIndex, future: EmptyBoxFuture);
+    fn accept_transaction(
+        &self,
+        transaction: Transaction,
+        sink: Box<TransactionVerificationSink>,
+    ) -> Result<(), String>;
+    fn install_sync_listener(&self, listener: SyncListenerRef);
 }
 
 /// Synchronization client facade
 pub struct SynchronizationClient<T: TaskExecutor, U: Verifier> {
-	/// Verification mutex
-	verification_lock: Mutex<()>,
-	/// Shared client state
-	shared_state: SynchronizationStateRef,
-	/// Client core
-	core: ClientCoreRef<SynchronizationClientCore<T>>,
-	/// Verifier
-	verifier: U,
+    /// Verification mutex
+    verification_lock: Mutex<()>,
+    /// Shared client state
+    shared_state: SynchronizationStateRef,
+    /// Client core
+    core: ClientCoreRef<SynchronizationClientCore<T>>,
+    /// Verifier
+    verifier: U,
 }
 
-impl<T, U> Client for SynchronizationClient<T, U> where T: TaskExecutor, U: Verifier {
+impl<T, U> Client for SynchronizationClient<T, U>
+where
+    T: TaskExecutor,
+    U: Verifier,
+{
     fn spawn_block(&self, block: IndexedBlock) {
-		self.core.lock().spawn_block(block);
+        self.core.lock().spawn_block(block);
     }
 
-	fn on_connect(&self, peer_index: PeerIndex) {
-		self.core.lock().on_connect(peer_index);
-	}
+    fn on_connect(&self, peer_index: PeerIndex) {
+        self.core.lock().on_connect(peer_index);
+    }
 
-	fn on_disconnect(&self, peer_index: PeerIndex) {
-		self.core.lock().on_disconnect(peer_index);
-	}
+    fn on_disconnect(&self, peer_index: PeerIndex) {
+        self.core.lock().on_disconnect(peer_index);
+    }
 
-	fn on_inventory(&self, peer_index: PeerIndex, message: types::Inv) {
-		self.core.lock().on_inventory(peer_index, message);
-	}
+    fn on_inventory(&self, peer_index: PeerIndex, message: types::Inv) {
+        self.core.lock().on_inventory(peer_index, message);
+    }
 
-	fn on_headers(&self, peer_index: PeerIndex, message: types::Headers) {
-		self.core.lock().on_headers(peer_index, message);
-	}
+    fn on_headers(&self, peer_index: PeerIndex, message: types::Headers) {
+        self.core.lock().on_headers(peer_index, message);
+    }
 
-	fn on_block(&self, peer_index: PeerIndex, block: IndexedBlock) {
-		// block can became:
-		// ignored, unknown, orphaned => no verification should occur
-		// on-time => this block + all dependent orphaned should be verified
-		{
-			// verification tasks must be scheduled in the same order as they were built in on_block
-			// => here we use verification_lock for this
-			let _verification_lock = self.verification_lock.lock();
-			let blocks_to_verify = self.core.lock().on_block(peer_index, block);
+    fn on_block(&self, peer_index: PeerIndex, block: IndexedBlock) {
+        // block can became:
+        // ignored, unknown, orphaned => no verification should occur
+        // on-time => this block + all dependent orphaned should be verified
+        {
+            // verification tasks must be scheduled in the same order as they were built in on_block
+            // => here we use verification_lock for this
+            let _verification_lock = self.verification_lock.lock();
+            let blocks_to_verify = self.core.lock().on_block(peer_index, block);
 
-			// verify blocks
-			if let Some(mut blocks_to_verify) = blocks_to_verify {
-				while let Some(block) = blocks_to_verify.pop_front() {
-					self.verifier.verify_block(block);
-				}
-			}
-		}
+            // verify blocks
+            if let Some(mut blocks_to_verify) = blocks_to_verify {
+                while let Some(block) = blocks_to_verify.pop_front() {
+                    self.verifier.verify_block(block);
+                }
+            }
+        }
 
-		// in case if verification was synchronous
-		// => try to switch to saturated state OR execute sync tasks
-		let mut client = self.core.lock();
-		if !client.try_switch_to_saturated_state() {
-			client.execute_synchronization_tasks(None, None);
-		}
-	}
+        // in case if verification was synchronous
+        // => try to switch to saturated state OR execute sync tasks
+        let mut client = self.core.lock();
+        if !client.try_switch_to_saturated_state() {
+            client.execute_synchronization_tasks(None, None);
+        }
+    }
 
-	fn on_transaction(&self, peer_index: PeerIndex, transaction: IndexedTransaction) {
-		// block can became:
-		// ignored, orphaned => no verification should occur
-		// on-time => this transaction + all dependent orphaned should be verified
-		let transactions_to_verify = self.core.lock().on_transaction(peer_index, transaction);
+    fn on_transaction(&self, peer_index: PeerIndex, transaction: IndexedTransaction) {
+        // block can became:
+        // ignored, orphaned => no verification should occur
+        // on-time => this transaction + all dependent orphaned should be verified
+        let transactions_to_verify = self.core.lock().on_transaction(peer_index, transaction);
 
-		if let Some(mut transactions_to_verify) = transactions_to_verify {
-			// it is not actual height of block this transaction will be included to
-			// => it possibly will be invalid if included in later blocks
-			// => mined block can be rejected
-			// => we should verify blocks we mine
-			let next_block_height = self.shared_state.best_storage_block_height() + 1;
-			while let Some(tx) = transactions_to_verify.pop_front() {
-				self.verifier.verify_transaction(next_block_height, tx);
-			}
-		}
-	}
+        if let Some(mut transactions_to_verify) = transactions_to_verify {
+            // it is not actual height of block this transaction will be included to
+            // => it possibly will be invalid if included in later blocks
+            // => mined block can be rejected
+            // => we should verify blocks we mine
+            let next_block_height = self.shared_state.best_storage_block_height() + 1;
+            while let Some(tx) = transactions_to_verify.pop_front() {
+                self.verifier.verify_transaction(next_block_height, tx);
+            }
+        }
+    }
 
-	fn on_notfound(&self, peer_index: PeerIndex, message: types::NotFound) {
-		self.core.lock().on_notfound(peer_index, message);
-	}
+    fn on_notfound(&self, peer_index: PeerIndex, message: types::NotFound) {
+        self.core.lock().on_notfound(peer_index, message);
+    }
 
-	fn after_peer_nearly_blocks_verified(&self, peer_index: PeerIndex, future: EmptyBoxFuture) {
-		self.core.lock().after_peer_nearly_blocks_verified(peer_index, future);
-	}
+    fn after_peer_nearly_blocks_verified(&self, peer_index: PeerIndex, future: EmptyBoxFuture) {
+        self.core.lock().after_peer_nearly_blocks_verified(
+            peer_index,
+            future,
+        );
+    }
 
-	fn accept_transaction(&self, transaction: Transaction, sink: Box<TransactionVerificationSink>) -> Result<(), String> {
-		let mut transactions_to_verify = try!(self.core.lock().accept_transaction(transaction, sink));
+    fn accept_transaction(
+        &self,
+        transaction: Transaction,
+        sink: Box<TransactionVerificationSink>,
+    ) -> Result<(), String> {
+        let mut transactions_to_verify =
+            try!(self.core.lock().accept_transaction(transaction, sink));
 
-		let next_block_height = self.shared_state.best_storage_block_height() + 1;
-		while let Some(tx) = transactions_to_verify.pop_front() {
-			self.verifier.verify_transaction(next_block_height, tx);
-		}
-		Ok(())
-	}
+        let next_block_height = self.shared_state.best_storage_block_height() + 1;
+        while let Some(tx) = transactions_to_verify.pop_front() {
+            self.verifier.verify_transaction(next_block_height, tx);
+        }
+        Ok(())
+    }
 
-	fn install_sync_listener(&self, listener: SyncListenerRef) {
-		self.core.lock().install_sync_listener(listener);
-	}
+    fn install_sync_listener(&self, listener: SyncListenerRef) {
+        self.core.lock().install_sync_listener(listener);
+    }
 }
 
-impl<T, U> SynchronizationClient<T, U> where T: TaskExecutor, U: Verifier {
-	/// Create new synchronization client
-	pub fn new(shared_state: SynchronizationStateRef, core: ClientCoreRef<SynchronizationClientCore<T>>, verifier: U) -> Arc<Self> {
-		Arc::new(SynchronizationClient {
-			verification_lock: Mutex::new(()),
-			shared_state: shared_state,
-			core: core,
-			verifier: verifier,
-		})
-	}
+impl<T, U> SynchronizationClient<T, U>
+where
+    T: TaskExecutor,
+    U: Verifier,
+{
+    /// Create new synchronization client
+    pub fn new(
+        shared_state: SynchronizationStateRef,
+        core: ClientCoreRef<SynchronizationClientCore<T>>,
+        verifier: U,
+    ) -> Arc<Self> {
+        Arc::new(SynchronizationClient {
+            verification_lock: Mutex::new(()),
+            shared_state: shared_state,
+            core: core,
+            verifier: verifier,
+        })
+    }
 }

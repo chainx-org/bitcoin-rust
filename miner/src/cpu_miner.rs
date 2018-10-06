@@ -10,6 +10,7 @@ use verification::is_valid_proof_of_work_hash;
 use block_assembler::BlockTemplate;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use rand;
 
 /// Instead of serializing `BlockHeader` from scratch over and over again,
 /// let's keep it serialized in memory and replace needed bytes
@@ -93,8 +94,11 @@ pub struct Solution {
 /// It's possible to also experiment with time, but I find it pointless
 /// to implement on CPU.
 pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder: T, max_extranonce: U256, running: Arc<AtomicBool>) -> Option<Solution> where T: CoinbaseTransactionBuilder {
-	let mut extranonce = U256::default();
 	let mut extranonce_bytes = [0u8; 32];
+    for x in extranonce_bytes.iter_mut() {
+        *x = rand::random();
+    }
+	let mut extranonce = U256::from(&extranonce_bytes as &[u8]);
 
 	let mut header_bytes = BlockHeaderBytes::new(block.version, block.previous_header_hash.clone(), block.bits);
 	// update header with time

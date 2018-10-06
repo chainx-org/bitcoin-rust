@@ -11,6 +11,7 @@ extern crate network;
 extern crate primitives;
 extern crate serialization as ser;
 extern crate verification;
+extern crate rand;
 #[macro_use]
 extern crate log;
 
