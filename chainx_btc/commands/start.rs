@@ -18,146 +18,166 @@ use node::build_block;
 const TIMER_INTERVAL_MS: u64 = 60 * 1000;
 
 enum BlockNotifierTask {
-	NewBlock(H256),
-	Stop,
+    NewBlock(H256),
+    Stop,
 }
 
 struct BlockNotifier {
-	tx: Sender<BlockNotifierTask>,
-	is_synchronizing: Arc<AtomicBool>,
-	worker_thread: Option<thread::JoinHandle<()>>,
+    tx: Sender<BlockNotifierTask>,
+    is_synchronizing: Arc<AtomicBool>,
+    worker_thread: Option<thread::JoinHandle<()>>,
 }
 
 impl BlockNotifier {
-	pub fn new(block_notify_command: String) -> Self {
-		let (tx, rx) = channel();
-		let is_synchronizing = Arc::new(AtomicBool::default());
-		BlockNotifier {
-			tx: tx,
-			is_synchronizing: is_synchronizing.clone(),
-			worker_thread: Some(thread::Builder::new()
-				.name("Block notification thread".to_owned())
-				.spawn(move || BlockNotifier::worker(rx, block_notify_command))
-				.expect("Error creating block notification thread"))
-		}
-	}
+    pub fn new(block_notify_command: String) -> Self {
+        let (tx, rx) = channel();
+        let is_synchronizing = Arc::new(AtomicBool::default());
+        BlockNotifier {
+            tx: tx,
+            is_synchronizing: is_synchronizing.clone(),
+            worker_thread: Some(
+                thread::Builder::new()
+                    .name("Block notification thread".to_owned())
+                    .spawn(move || BlockNotifier::worker(rx, block_notify_command))
+                    .expect("Error creating block notification thread"),
+            ),
+        }
+    }
 
-	fn worker(rx: Receiver<BlockNotifierTask>, block_notify_command: String) {
-		for cmd in rx {
-			match cmd {
-				BlockNotifierTask::NewBlock(new_block_hash) => {
-					let new_block_hash = new_block_hash.to_reversed_str();
-					let command = block_notify_command.replace("%s", &new_block_hash);
-					let c_command = ::std::ffi::CString::new(command.clone()).unwrap();
-					unsafe {
-						use libc::system;
+    fn worker(rx: Receiver<BlockNotifierTask>, block_notify_command: String) {
+        for cmd in rx {
+            match cmd {
+                BlockNotifierTask::NewBlock(new_block_hash) => {
+                    let new_block_hash = new_block_hash.to_reversed_str();
+                    let command = block_notify_command.replace("%s", &new_block_hash);
+                    let c_command = ::std::ffi::CString::new(command.clone()).unwrap();
+                    unsafe {
+                        use libc::system;
 
-						let err = system(c_command.as_ptr());
-						if err != 0 {
-							error!(target: "pbtc", "Block notification command {} exited with error code {}", command, err);
-						}
-					}
-				},
-				BlockNotifierTask::Stop => {
-					break
-				}
-			}
-		}
-		trace!(target: "pbtc", "Block notification thread stopped");
-	}
+                        let err = system(c_command.as_ptr());
+                        if err != 0 {
+                            error!(target: "pbtc", "Block notification command {} exited with error code {}", command, err);
+                        }
+                    }
+                }
+                BlockNotifierTask::Stop => break,
+            }
+        }
+        trace!(target: "pbtc", "Block notification thread stopped");
+    }
 }
 
 impl SyncListener for BlockNotifier {
-	fn synchronization_state_switched(&self, is_synchronizing: bool) {
-		self.is_synchronizing.store(is_synchronizing, Ordering::SeqCst);
-	}
+    fn synchronization_state_switched(&self, is_synchronizing: bool) {
+        self.is_synchronizing.store(
+            is_synchronizing,
+            Ordering::SeqCst,
+        );
+    }
 
-	fn best_storage_block_inserted(&self, block_hash: &H256) {
-		if !self.is_synchronizing.load(Ordering::SeqCst) {
-			self.tx.send(BlockNotifierTask::NewBlock(block_hash.clone()))
-				.expect("Block notification thread have the same lifetime as `BlockNotifier`")
-		}
-	}
+    fn best_storage_block_inserted(&self, block_hash: &H256) {
+        if !self.is_synchronizing.load(Ordering::SeqCst) {
+            self.tx
+                .send(BlockNotifierTask::NewBlock(block_hash.clone()))
+                .expect(
+                    "Block notification thread have the same lifetime as `BlockNotifier`",
+                )
+        }
+    }
 }
 
 impl Drop for BlockNotifier {
-	fn drop(&mut self) {
-		if let Some(join_handle) = self.worker_thread.take() {
-			let _ = self.tx.send(BlockNotifierTask::Stop);
-			join_handle.join().expect("Clean shutdown.");
-		}
-	}
+    fn drop(&mut self) {
+        if let Some(join_handle) = self.worker_thread.take() {
+            let _ = self.tx.send(BlockNotifierTask::Stop);
+            join_handle.join().expect("Clean shutdown.");
+        }
+    }
 }
 
 pub fn start(cfg: config::Config) -> Result<(), String> {
-	let mut el = p2p::event_loop();
+    let mut el = p2p::event_loop();
 
-	init_db(&cfg)?;
+    init_db(&cfg)?;
 
-	let nodes_path = node_table_path(&cfg);
+    let nodes_path = node_table_path(&cfg);
 
-	let p2p_cfg = p2p::Config {
-		threads: cfg.p2p_threads,
-		inbound_connections: cfg.inbound_connections,
-		outbound_connections: cfg.outbound_connections,
-		connection: p2p::NetConfig {
-			protocol_version: PROTOCOL_VERSION,
-			protocol_minimum: PROTOCOL_MINIMUM,
-			magic: cfg.consensus.magic(),
-			local_address: SocketAddr::new(cfg.host, cfg.port),
-			services: cfg.services,
-			user_agent: cfg.user_agent,
-			start_height: 0,
-			relay: true,
-		},
-		peers: cfg.connect.map_or_else(|| vec![], |x| vec![x]),
-		seeds: cfg.seednodes,
-		node_table_path: nodes_path,
-		preferable_services: cfg.services,
-		internet_protocol: cfg.internet_protocol,
-	};
+    let p2p_cfg = p2p::Config {
+        threads: cfg.p2p_threads,
+        inbound_connections: cfg.inbound_connections,
+        outbound_connections: cfg.outbound_connections,
+        connection: p2p::NetConfig {
+            protocol_version: PROTOCOL_VERSION,
+            protocol_minimum: PROTOCOL_MINIMUM,
+            magic: cfg.consensus.magic(),
+            local_address: SocketAddr::new(cfg.host, cfg.port),
+            services: cfg.services,
+            user_agent: cfg.user_agent,
+            start_height: 0,
+            relay: true,
+        },
+        peers: cfg.connect.map_or_else(|| vec![], |x| vec![x]),
+        seeds: cfg.seednodes,
+        node_table_path: nodes_path,
+        preferable_services: cfg.services,
+        internet_protocol: cfg.internet_protocol,
+    };
 
-	let sync_peers = create_sync_peers();
-	let local_sync_node = create_local_sync_node(cfg.consensus, cfg.db.clone(), sync_peers.clone(), cfg.verification_params);
-	let sync_connection_factory = create_sync_connection_factory(sync_peers.clone(), local_sync_node.clone());
+    let sync_peers = create_sync_peers();
+    let local_sync_node = create_local_sync_node(
+        cfg.consensus,
+        cfg.db.clone(),
+        sync_peers.clone(),
+        cfg.verification_params,
+    );
+    let sync_connection_factory =
+        create_sync_connection_factory(sync_peers.clone(), local_sync_node.clone());
 
-	if let Some(block_notify_command) = cfg.block_notify_command {
-		local_sync_node.install_sync_listener(Box::new(BlockNotifier::new(block_notify_command)));
-	}
+    if let Some(block_notify_command) = cfg.block_notify_command {
+        local_sync_node.install_sync_listener(Box::new(BlockNotifier::new(block_notify_command)));
+    }
 
-	let p2p = try!(p2p::P2P::new(p2p_cfg, sync_connection_factory, el.handle()).map_err(|x| x.to_string()));
-	let rpc_deps = rpc::Dependencies {
-		network: cfg.network,
-		storage: cfg.db,
-		local_sync_node: local_sync_node.clone(),
-		p2p_context: p2p.context().clone(),
-		remote: el.remote(),
-	};
-	let _rpc_server = try!(rpc::new_http(cfg.rpc_config, rpc_deps));
-    
-    let interval = Interval::new(Instant::now() + Duration::from_millis(TIMER_INTERVAL_MS), Duration::from_millis(TIMER_INTERVAL_MS));
-        let running = Arc::new(AtomicBool::new(true));
+    let p2p = try!(
+        p2p::P2P::new(p2p_cfg, sync_connection_factory, el.handle())
+            .map_err(|x| x.to_string())
+    );
+    let rpc_deps = rpc::Dependencies {
+        network: cfg.network,
+        storage: cfg.db,
+        local_sync_node: local_sync_node.clone(),
+        p2p_context: p2p.context().clone(),
+        remote: el.remote(),
+    };
+    let _rpc_server = try!(rpc::new_http(cfg.rpc_config, rpc_deps));
+
+    let interval = Interval::new(
+        Instant::now() + Duration::from_millis(TIMER_INTERVAL_MS),
+        Duration::from_millis(TIMER_INTERVAL_MS),
+    );
+    let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
-    let work = interval.map_err(|e| debug!("Timer error: {:?}", e)).for_each(move |_| {
-      trace!("interval store false");
-      r.store(false, Ordering::SeqCst); 
-      Ok(())
-    });
-    let child = thread::spawn(move || {
-        loop {
-             if let Some(block) = build_block(local_sync_node.get_block_template(), running.clone()) {
-                 local_sync_node.spawn_block(block);
-             } else {
-                 info!("build block failed")
-             }
-             running.store(true, Ordering::SeqCst);
-             trace!("store true");
+    let work = interval
+        .map_err(|e| debug!("Timer error: {:?}", e))
+        .for_each(move |_| {
+            trace!("interval store false");
+            r.store(false, Ordering::SeqCst);
+            Ok(())
+        });
+    let child = thread::spawn(move || loop {
+        if let Some(block) = build_block(local_sync_node.get_block_template(), running.clone()) {
+            local_sync_node.spawn_block(block);
+        } else {
+            info!("build block failed")
         }
-   });   
-   el.handle().spawn(work);
+        running.store(true, Ordering::SeqCst);
+        trace!("store true");
+    });
+    el.handle().spawn(work);
 
-	try!(p2p.run().map_err(|_| "Failed to start p2p module"));
-	el.run(p2p::forever()).unwrap();
-    child.join().expect("Couldn't join on the associated thread");
-	Ok(())
+    try!(p2p.run().map_err(|_| "Failed to start p2p module"));
+    el.run(p2p::forever()).unwrap();
+    child.join().expect(
+        "Couldn't join on the associated thread",
+    );
+    Ok(())
 }
