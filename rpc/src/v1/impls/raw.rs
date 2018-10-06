@@ -3,12 +3,14 @@ use jsonrpc_macros::Trailing;
 use ser::{Reader, serialize, deserialize};
 use v1::traits::Raw;
 use v1::types::{SignedTransactionOutput, TransactionInputScript, TransactionOutputScript, SignedTransactionInput, Bytes, RawTransaction, TransactionInput, TransactionOutput, TransactionOutputs, Transaction, GetRawTransactionResponse};
-use v1::types::{H256, ScriptType};
+use v1::types::H256;
 use v1::helpers::errors::{execution, invalid_params, transaction_not_found };
 use chain::Transaction as GlobalTransaction;
 use primitives::bytes::Bytes as GlobalBytes;
 use primitives::hash::H256 as GlobalH256;
 use std::sync::Arc;
+use keys::{self, Address};
+use global_script::Script;
 use sync;
 
 pub struct RawClient<T: RawClientCoreApi> {
@@ -140,9 +142,21 @@ impl RawClientCoreApi for RawClientCore {
                                       script_sig: TransactionInputScript{asm: String::new(), hex: Bytes::new(input.clone().script_sig.take()),},
                                       sequence: input.sequence,
                                       txinwitness: input.script_witness.iter().map(|bytes| String::from_utf8(bytes.clone().take()).unwrap()).collect::<_>(),}).collect::<_>(),
-                    vout: tx.outputs.iter().map(|output| SignedTransactionOutput{value: output.value as f64, n: 0,// to do
-                                             script: TransactionOutputScript{asm: String::new(), hex: Bytes::new(output.clone().script_pubkey.take()),
-                                             req_sigs: 777, script_type: ScriptType::PubKey, addresses: vec![],},}).collect::<_>(),
+                    vout: tx.outputs.iter().map(|output| {
+                                           let ref script_bytes = output.clone().script_pubkey;
+                                           let script: Script = script_bytes.clone().into();
+                                           let script_asm = format!("{}", script);
+                                           let script_addresses = script.extract_destinations().unwrap_or(vec![]);
+                                           SignedTransactionOutput{value: 0.00000001f64 * output.value as f64, n: 0,// to do
+                                             script: TransactionOutputScript{asm: script_asm, hex: script_bytes.clone().into(),
+                                             req_sigs: script.num_signatures_required() as u32, script_type: script.script_type().into(), addresses: script_addresses.into_iter().map(|a| Address {
+                                                       network: keys::Network::Testnet, /*match self.network {
+                                                            Network::Mainnet => keys::Network::Mainnet,
+                                                            _ => keys::Network::Testnet,
+                                                       },*/
+                                                       hash: a.hash,
+                                                       kind: a.kind,}).collect(),},
+                                           } }).collect::<_>(),
                     blockhash: Default::default(),
                     confirmations: 0, // to do:tx.is_final_in_block(height, block_time),
                     time: 0, // to do: block_time,
