@@ -257,7 +257,7 @@ pub fn verify_script(
 	let mut stack = Stack::new();
 	let mut stack_copy = Stack::new();
 	let mut had_witness = false;
-
+    info!("--------- verify_script");
 	eval_script(&mut stack, script_sig, flags, checker, version)?;
 
 	if flags.verify_p2sh {

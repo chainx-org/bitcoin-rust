@@ -345,6 +345,7 @@ impl<'a> TransactionEval<'a> {
 	}
 
 	fn check(&self) -> Result<(), TransactionError> {
+        info!("--------------------check");
 		if self.verification_level == VerificationLevel::Header
 			|| self.verification_level == VerificationLevel::NoVerification {
 			return Ok(());

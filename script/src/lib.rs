@@ -1,3 +1,6 @@
+// Copyright 2018 Chainpool
+
+#[macro_use]
 extern crate log;
 extern crate bitcrypto as crypto;
 extern crate chain;

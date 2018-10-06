@@ -11,8 +11,8 @@ use chain::Transaction as GlobalTransaction;
 use primitives::bytes::Bytes as GlobalBytes;
 use primitives::hash::H256 as GlobalH256;
 use std::sync::Arc;
-use keys::{self, Address};
-use global_script::Script;
+use keys::{self, Address, KeyPair, Private};
+use global_script::{SignatureVersion, Script, TransactionInputSigner, UnsignedTransactionInput};
 use sync;
 
 pub struct RawClient<T: RawClientCoreApi> {
@@ -269,6 +269,35 @@ where
             .accept_transaction(transaction)
             .map(|h| h.reversed().into())
             .map_err(|e| execution(e))
+    }
+
+    fn sign_raw_transaction(&self, raw_transaction:RawTransaction, private_key: H256) -> Result<RawTransaction, Error> {
+        let raw_transaction_data: Vec<u8> = raw_transaction.into();
+        let mut transaction: GlobalTransaction = try!(deserialize(Reader::new(&raw_transaction_data)).map_err(
+            |e| {
+                invalid_params("tx", e)
+            },
+        ));
+        let tx_signer = TransactionInputSigner { version: transaction.version, 
+                                                 inputs: transaction.inputs.iter().map(|input|
+                                                       UnsignedTransactionInput{ previous_output: input.previous_output.clone(),
+                                                                                 sequence: input.sequence, }).collect::<_>(),
+                                                 outputs: transaction.outputs.clone(),
+                                                 lock_time: transaction.lock_time, };
+        let sighashtype = 0x41;
+        let private_key = Private {
+            network: keys::Network::Testnet,
+            secret: private_key.into(),
+            compressed: false,
+        };
+        info!("sign private_key: {:?}", private_key);
+        let tx_input = tx_signer.signed_input(&KeyPair::from_private(private_key).unwrap(),
+                                              0, transaction.outputs[0].value,
+                                              &transaction.outputs[0].clone().script_pubkey.into(),
+                                              SignatureVersion::Base, sighashtype);
+        transaction.inputs = vec![tx_input];
+        let transaction = serialize(&transaction);
+        Ok(transaction.into()) 
     }
 
     fn create_raw_transaction(
