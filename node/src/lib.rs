@@ -28,7 +28,6 @@ pub struct P2shCoinbaseTransactionBuilder {
 impl P2shCoinbaseTransactionBuilder {
     pub fn new(hash: &AddressHash, value: u64) -> Self {
 	    let script_pubkey = Builder::build_p2sh(hash).into();
-
 	    let transaction = Transaction {
 		    version: 0,
 		    inputs: vec![TransactionInput::coinbase(Bytes::default())],
@@ -65,7 +64,7 @@ const SECRET_0: &'static str = "5KSCKP8NUyBZPCCQusxRwgmz9sfvJQEgbGukmmHepWw5Bzp9
 pub fn build_block(block_template: BlockTemplate, running: Arc<AtomicBool>) -> Option<IndexedBlock> {
     let kp = KeyPair::from_private(SECRET_0.into()).unwrap();
     info!("coin base reward: {:?}", kp.public().address_hash());
-    let coinbase_builder = P2shCoinbaseTransactionBuilder::new(&kp.public().address_hash(), 10);
+    let coinbase_builder = P2shCoinbaseTransactionBuilder::new(&kp.public().address_hash(), 1000000000);
     if let Some(solution) = find_solution(&block_template, coinbase_builder, U256::max_value(), running) {
 		let coinbase_hash = solution.coinbase_transaction.hash();
 		let mut transactions = vec![IndexedTransaction::new(coinbase_hash, solution.coinbase_transaction)];

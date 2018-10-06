@@ -16,6 +16,7 @@ serialization = { path = "../serialization" }
 verification = { path = "../verification" }
 keys = { path = "../keys" }
 script = { path = "../script" }
+rand = "0.4"
 log = "0.4"
 
 [dev-dependencies]
