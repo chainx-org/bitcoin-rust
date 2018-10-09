@@ -5,11 +5,11 @@ use jsonrpc_core;
 use jsonrpc_http_server::{self, ServerBuilder, Server, Host};
 
 /// Start http server asynchronously and returns result with `Server` handle on success or an error.
-pub fn start_http<M: jsonrpc_core::Metadata>(
+pub fn start_http<M: jsonrpc_core::Metadata + Default, S: jsonrpc_core::Middleware<M>>(
 	addr: &SocketAddr,
 	cors_domains: Option<Vec<String>>,
 	allowed_hosts: Option<Vec<String>>,
-	handler: jsonrpc_core::MetaIoHandler<M>,
+	handler: jsonrpc_core::MetaIoHandler<M, S>,
 	) -> Result<Server, io::Error> {
 
 	let cors_domains = cors_domains.map(|domains| {

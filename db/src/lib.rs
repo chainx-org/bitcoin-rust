@@ -1,4 +1,6 @@
-extern crate rocksdb;
+// Copyright 2018 Chainpool
+
+extern crate parity_rocksdb as rocksdb;
 extern crate elastic_array;
 extern crate parking_lot;
 #[macro_use]
