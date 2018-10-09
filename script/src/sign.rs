@@ -152,17 +152,12 @@ impl TransactionInputSigner {
 	) -> TransactionInput {
 		let hash = self.signature_hash(input_index, input_amount, script_pubkey, sigversion, sighash);
 
-        info!("signed_input: {:?}, input_amount: {:?}, script_pubkey: {:?}, sigversion: {:?}, sighash: {:?}, hash: {:?}",
-              input_index, input_amount, script_pubkey, sigversion, sighash, hash);
 		let mut signature: Vec<u8> = keypair.private().sign(&hash).unwrap().into();
-        info!("-----signature:{:?}, sighash:{:?}", signature, sighash);
 		signature.push(sighash as u8);
-        info!("-----signature:{:?}", signature);
 		let script_sig = Builder::default()
 			.push_data(&signature)
 			.push_data(keypair.public())
 			.into_script();
-        info!("----signature: {:?}, public address hash: {:?}, script_sig: {:?}", signature, keypair.public().address_hash(), script_sig);
 
 		let unsigned_input = &self.inputs[input_index];
 		TransactionInput {

@@ -11,9 +11,8 @@ use chain::Transaction as GlobalTransaction;
 use primitives::bytes::Bytes as GlobalBytes;
 use primitives::hash::H256 as GlobalH256;
 use std::sync::Arc;
-use keys::{self, Address, KeyPair, Private, Public};
-use global_script::{Opcode, verify_script, VerificationFlags, SignatureVersion, TransactionSignatureChecker,
-                    ScriptWitness, Script, TransactionInputSigner, UnsignedTransactionInput};
+use keys::{self, Address};
+use global_script::{Opcode, Script};
 use sync;
 use other_hex;
 
@@ -92,16 +91,9 @@ pub fn do_create_raw_transaction(
                 }
             },
             TransactionOutput::ScriptData(with_script_data) => {
-                /*let script = ScriptBuilder::default()
-                    .return_bytes(&*with_script_data.script_data)
-                    .into_script();*/
-                //let public = other_hex::decode(&*with_script_data.script_data).unwrap();
-                let key_pair = KeyPair::from_private(Private { network: keys::Network::Testnet,
-                                      secret: 1.into(), compressed: true, }).unwrap();
                 let script = ScriptBuilder::default()
-                                        .push_data(key_pair.public())
-                                        .push_opcode(Opcode::OP_CHECKSIG).into_script();
-
+                    .return_bytes(&*with_script_data.script_data)
+                    .into_script();
 
                 chain::TransactionOutput {
                     value: 222,
@@ -292,40 +284,6 @@ where
             .accept_transaction(transaction)
             .map(|h| h.reversed().into())
             .map_err(|e| execution(e))
-    }
-
-    fn sign_raw_transaction(&self, raw_transaction:RawTransaction, private_key: H256) -> Result<RawTransaction, Error> {
-        let raw_transaction_data: Vec<u8> = raw_transaction.into();
-        let mut transaction: GlobalTransaction = try!(deserialize(Reader::new(&raw_transaction_data)).map_err(
-            |e| {
-                invalid_params("tx", e)
-            },
-        ));
-        info!("sign raw transaction 1: {:?}", transaction);
-        let tx_signer = TransactionInputSigner { version: transaction.version, 
-                                                 inputs: transaction.inputs.iter().map(|input|
-                                                       UnsignedTransactionInput{ previous_output: input.previous_output.clone(),
-                                                                                 sequence: input.sequence, }).collect::<_>(),
-                                                 outputs: transaction.outputs.clone(),
-                                                 lock_time: transaction.lock_time, };
-        let sighashtype = 0x41;
-        let private_key = Private {
-            network: keys::Network::Testnet,
-            secret: private_key.into(),
-            compressed: true,
-        };
-        info!("sign private_key: {:?}", private_key);
-        let tx_input = tx_signer.signed_input(&KeyPair::from_private(private_key).unwrap(),
-                                              0, transaction.outputs[0].value,
-                                              &transaction.outputs[0].clone().script_pubkey.into(),
-                                              SignatureVersion::Base, sighashtype);
-        //let checker = TransactionSignatureChecker { input_index: 0, input_amount:transaction.outputs[0].value, signer: tx_signer,};
-        //assert_eq!(verify_script(&tx_input.script_sig.clone().into(), &transaction.inputs[0].clone().script_pubkey.into(),
-        //              &ScriptWitness::default(), &VerificationFlags::default().verify_p2sh(true), &checker, SignatureVersion::Base), Ok(()));
-        transaction.inputs = vec![tx_input];
-        info!("sign transaction 2: {:?}", transaction);
-        let transaction = serialize(&transaction);
-        Ok(transaction.into()) 
     }
 
     fn create_raw_transaction(

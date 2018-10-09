@@ -5,6 +5,7 @@ use v1::types::H256;
 use v1::types::GetBlockResponse;
 use v1::types::GetTxOutResponse;
 use v1::types::GetTxOutSetInfoResponse;
+use v1::types::RawTransaction;
 
 
 build_rpc_trait! {
@@ -38,5 +39,7 @@ build_rpc_trait! {
 		/// @curl-example: curl --data-binary '{"jsonrpc": "2.0", "method": "gettxoutsetinfo", "params": [], "id":1 }' -H 'content-type: application/json' http://127.0.0.1:8332/
 		#[rpc(name = "gettxoutsetinfo")]
 		fn transaction_out_set_info(&self) -> Result<GetTxOutSetInfoResponse, Error>;
+		#[rpc(name = "signrawtransaction")]
+		fn sign_raw_transaction(&self, RawTransaction, H256) -> Result<RawTransaction, Error>;
 	}
 }
