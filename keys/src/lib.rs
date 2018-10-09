@@ -1,5 +1,7 @@
 //! Bitcoin keys.
 
+#[macro_use]
+extern crate log;
 extern crate rand;
 extern crate rustc_hex as hex;
 #[macro_use]

@@ -26,9 +26,9 @@ pub struct P2shCoinbaseTransactionBuilder {
 
 impl P2shCoinbaseTransactionBuilder {
     pub fn new(hash: &keys::AddressHash, value: u64) -> Self {
-        let script_pubkey = Builder::build_p2sh(hash).into();
+        let script_pubkey = Builder::build_p2pkh(hash).into();
         let transaction = Transaction {
-            version: 0,
+            version: 1,
             inputs: vec![TransactionInput::coinbase(Bytes::default())],
             outputs: vec![
                 TransactionOutput {
@@ -67,7 +67,7 @@ pub fn build_block(
    let private_key = keys::Private {
        network: keys::Network::Testnet,
        secret: SECRET.into(),
-       compressed: false,
+       compressed: true,
     };
     info!("miner private_key:{:?}", private_key);
     let kp = keys::KeyPair::from_private(private_key).unwrap();

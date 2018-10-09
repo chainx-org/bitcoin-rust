@@ -209,7 +209,7 @@ impl<'a> TransactionMaturity<'a> {
 		let immature_spend = self.transaction.raw.inputs.iter()
 			.any(|input| match self.store.transaction_meta(&input.previous_output.hash) {
 				Some(ref meta) if meta.is_coinbase() && self.height < meta.height() + COINBASE_MATURITY => true,
-				_ => false,
+				_ => { info!("not found coinbase meta hash: {:?}", input.previous_output.hash); false},
 			});
 
 		if immature_spend {
@@ -392,6 +392,7 @@ impl<'a> TransactionEval<'a> {
 				.verify_bin2num(self.verify_monolith_opcodes)
 				.verify_num2bin(self.verify_monolith_opcodes);
 
+            info!("--- input: {:?}, output: {:?}", input, output);
 			try!(verify_script(&input, &output, &script_witness, &flags, &checker, self.signature_version)
 				.map_err(|e| TransactionError::Signature(index, e)));
 		}
