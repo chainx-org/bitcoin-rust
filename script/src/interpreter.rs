@@ -257,15 +257,14 @@ pub fn verify_script(
 	let mut stack = Stack::new();
 	let mut stack_copy = Stack::new();
 	let mut had_witness = false;
-
 	eval_script(&mut stack, script_sig, flags, checker, version)?;
 
 	if flags.verify_p2sh {
 		stack_copy = stack.clone();
 	}
 
-	let res = eval_script(&mut stack, script_pubkey, flags, checker, version)?;
-	if !res {
+	let res = eval_script(&mut stack, script_pubkey, flags, checker, version);
+	if !res? {
 		return Err(Error::EvalFalse);
 	}
 
@@ -864,7 +863,9 @@ pub fn eval_script(
 				}
 			},
 			Opcode::OP_EQUALVERIFY => {
-				let equal = stack.pop()? == stack.pop()?;
+                let pk1 = stack.pop()?;
+                let pk2 = stack.pop()?;
+				let equal = pk1 == pk2;
 				if !equal {
 					return Err(Error::EqualVerify);
 				}
@@ -993,7 +994,8 @@ pub fn eval_script(
 				stack.push(v.to_vec().into());
 			},
 			Opcode::OP_HASH160 => {
-				let v = dhash160(&stack.pop()?);
+                let ha:&[u8] = &stack.pop()?;
+				let v = dhash160(ha);
 				stack.push(v.to_vec().into());
 			},
 			Opcode::OP_HASH256 => {
@@ -2249,7 +2251,7 @@ mod tests {
 		use sign::UnsignedTransactionInput;
 		use chain::{OutPoint, TransactionOutput};
 
-		let key_pair = KeyPair::from_private(Private { network: Network::Mainnet, secret: 1.into(), compressed: false, }).unwrap();
+		let key_pair = KeyPair::from_private(Private { network: Network::Testnet, secret: 1.into(), compressed: false, }).unwrap();
 		let redeem_script = Builder::default()
 			.push_data(key_pair.public())
 			.push_opcode(Opcode::OP_CHECKSIG)
@@ -2287,10 +2289,10 @@ mod tests {
 
 		// valid signature
 		{
-			let signed_input = checker.signer.signed_input(&key_pair, 0, amount, &script_pubkey, SignatureVersion::ForkId, sighashtype);
+			let signed_input = checker.signer.signed_input(&key_pair, 0, amount, &script_pubkey, SignatureVersion::Base, sighashtype);
 			let script_sig = signed_input.script_sig.into();
 
-			assert_eq!(verify_script(&script_sig, &script_pubkey, &ScriptWitness::default(), &flags, &checker, SignatureVersion::ForkId), Ok(()));
+			assert_eq!(verify_script(&script_sig, &script_pubkey, &ScriptWitness::default(), &flags, &checker, SignatureVersion::Base), Ok(()));
 		}
 
 		// signature with wrong amount

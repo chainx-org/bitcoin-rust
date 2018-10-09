@@ -1,3 +1,6 @@
+// Copyright 2018 Chainpool
+
+#[macro_use]
 extern crate log;
 extern crate rustc_hex as hex;
 extern crate serde;
@@ -21,6 +24,7 @@ extern crate miner;
 extern crate verification;
 extern crate script as global_script;
 extern crate keys;
+extern crate hex as other_hex;
 
 pub mod v1;
 pub mod rpc_server;

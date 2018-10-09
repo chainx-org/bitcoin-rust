@@ -13,10 +13,11 @@ pub struct Builder {
 impl Builder {
 	/// Builds p2pkh script pubkey
 	pub fn build_p2pkh(address: &AddressHash) -> Script {
+        let address: &[u8] = &**address;
 		Builder::default()
 			.push_opcode(Opcode::OP_DUP)
 			.push_opcode(Opcode::OP_HASH160)
-			.push_bytes(&**address)
+			.push_bytes(address)
 			.push_opcode(Opcode::OP_EQUALVERIFY)
 			.push_opcode(Opcode::OP_CHECKSIG)
 			.into_script()

@@ -156,7 +156,7 @@ impl TransactionInputSigner {
 		signature.push(sighash as u8);
 		let script_sig = Builder::default()
 			.push_data(&signature)
-			//.push_data(keypair.public())
+			.push_data(keypair.public())
 			.into_script();
 
 		let unsigned_input = &self.inputs[input_index];

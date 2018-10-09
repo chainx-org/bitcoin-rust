@@ -37,6 +37,12 @@ pub struct TransactionOutputWithScriptData {
 	pub script_data: Bytes,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct PublicKey {
+    pub public: String,
+    pub amount: f64,
+}
+
 /// Transaction output
 #[derive(Debug, PartialEq)]
 pub enum TransactionOutput {
@@ -44,6 +50,7 @@ pub enum TransactionOutput {
 	Address(TransactionOutputWithAddress),
 	/// Of form data: script_data_bytes
 	ScriptData(TransactionOutputWithScriptData),
+    Key(PublicKey),
 }
 
 /// Transaction outputs, which serializes/deserializes as KV-map
@@ -173,6 +180,10 @@ impl Serialize for TransactionOutputs {
 				&TransactionOutput::ScriptData(ref script_output) => {
 					state.serialize_entry("data", &script_output.script_data)?;
 				},
+                &TransactionOutput::Key(ref val) => {
+                    state.serialize_entry("public", &val.public)?;
+                    state.serialize_entry("amount", &val.amount)?;
+                }
 			}
 		}
 		state.end()
@@ -196,18 +207,27 @@ impl<'a> Deserialize<'a> for TransactionOutputs {
 				let mut outputs: Vec<TransactionOutput> = Vec::with_capacity(visitor.size_hint().unwrap_or(0));
 
 				while let Some(key) = try!(visitor.next_key::<String>()) {
-					if &key == "data" {
-						let value: Bytes = try!(visitor.next_value());
-						outputs.push(TransactionOutput::ScriptData(TransactionOutputWithScriptData {
-							script_data: value,
-						}));
-					} else {
-						let address = types::address::AddressVisitor::default().visit_str(&key)?;
-						let amount: f64 = try!(visitor.next_value());
-						outputs.push(TransactionOutput::Address(TransactionOutputWithAddress {
-							address: address,
-							amount: amount,
-						}));
+					match key.as_ref() {
+                        "data" => {
+						              let value: Bytes = try!(visitor.next_value());
+						              outputs.push(TransactionOutput::ScriptData(TransactionOutputWithScriptData {
+							               script_data: value,
+						              }));
+					              },
+                        "public" => {
+                                       let public: String = try!(visitor.next_key()).unwrap();
+                                       try!(visitor.next_key::<String>());
+                                       let amount: f64 = try!(visitor.next_value()); 
+                                       outputs.push(TransactionOutput::Key(PublicKey {public: public, amount: amount,}));
+                                  },
+                        _ =>      {
+						               let address = types::address::AddressVisitor::default().visit_str(&key)?;
+						               let amount: f64 = try!(visitor.next_value());
+						               outputs.push(TransactionOutput::Address(TransactionOutputWithAddress {
+							                address: address,
+							                amount: amount,
+						               }));
+                                   },
 					}
 				}
 

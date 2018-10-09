@@ -1,0 +1,7 @@
+[package]
+name = "key"
+version = "0.1.0"
+authors = ["gguoss <guanghuaguo.oss@gmail.com>"]
+
+[dependencies]
+keys = { path = "../keys" }

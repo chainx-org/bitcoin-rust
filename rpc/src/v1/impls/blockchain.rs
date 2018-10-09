@@ -4,18 +4,20 @@ use v1::types::{GetTxOutResponse, TransactionOutputScript};
 use v1::types::GetTxOutSetInfoResponse;
 use v1::types::H256;
 use v1::types::U256;
-use keys::{self, Address};
 use v1::helpers::errors::{block_not_found, block_at_height_not_found, transaction_not_found,
-                          transaction_output_not_found, transaction_of_side_branch};
+                          invalid_params, transaction_output_not_found, transaction_of_side_branch};
 use jsonrpc_macros::Trailing;
 use jsonrpc_core::Error;
 use {storage, chain};
-use global_script::Script;
 use chain::OutPoint;
 use verification;
-use ser::serialize;
 use network::Network;
 use primitives::hash::H256 as GlobalH256;
+use chain::Transaction as GlobalTransaction;
+use keys::{self, Address, KeyPair, Private};
+use ser::{Reader, serialize, deserialize};
+use v1::types::RawTransaction;
+use global_script::{SignatureVersion, Script, TransactionInputSigner, UnsignedTransactionInput};
 
 pub struct BlockChainClient<T: BlockChainClientCoreApi> {
     core: T,
@@ -190,6 +192,39 @@ impl<T> BlockChain for BlockChainClient<T>
 where
     T: BlockChainClientCoreApi,
 {
+    fn sign_raw_transaction(&self, raw_transaction:RawTransaction, private_key: H256) -> Result<RawTransaction, Error> {
+        let raw_transaction_data: Vec<u8> = raw_transaction.into();
+        let mut transaction: GlobalTransaction = try!(deserialize(Reader::new(&raw_transaction_data)).map_err(
+            |e| {
+                invalid_params("tx", e)
+            },
+        ));
+        let tx_signer = TransactionInputSigner { version: transaction.version, 
+                                                 inputs: transaction.inputs.iter().map(|input|
+                                                       UnsignedTransactionInput{ previous_output: input.previous_output.clone(),
+                                                                                 sequence: input.sequence, }).collect::<_>(),
+                                                 outputs: transaction.outputs.clone(),
+                                                 lock_time: transaction.lock_time, };
+        let sighashtype = 0x41;
+        let private_key = Private {
+            network: keys::Network::Testnet,
+            secret: private_key.into(),
+            compressed: true,
+        };
+        let txout = self.core.verbose_transaction_out(transaction.inputs[0].previous_output.clone()).unwrap();
+        let script_pubkey = txout.script.hex.to_vec().into();
+        let tx_input = tx_signer.signed_input(&KeyPair::from_private(private_key).unwrap(),
+                                              0, transaction.outputs[0].value,
+                                              &script_pubkey,
+                                              SignatureVersion::Base, sighashtype);
+        //let checker = TransactionSignatureChecker { input_index: 0, input_amount:transaction.outputs[0].value, signer: tx_signer,};
+        //assert_eq!(verify_script(&tx_input.script_sig.clone().into(), &transaction.inputs[0].clone().script_pubkey.into(),
+        //              &ScriptWitness::default(), &VerificationFlags::default().verify_p2sh(true), &checker, SignatureVersion::Base), Ok(()));
+        transaction.inputs = vec![tx_input];
+        let transaction = serialize(&transaction);
+        Ok(transaction.into()) 
+    }
+
     fn best_block_hash(&self) -> Result<H256, Error> {
         Ok(self.core.best_block_hash().reversed().into())
     }

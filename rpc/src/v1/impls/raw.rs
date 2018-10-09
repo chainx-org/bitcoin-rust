@@ -12,8 +12,9 @@ use primitives::bytes::Bytes as GlobalBytes;
 use primitives::hash::H256 as GlobalH256;
 use std::sync::Arc;
 use keys::{self, Address};
-use global_script::Script;
+use global_script::{Opcode, Script};
 use sync;
+use other_hex;
 
 pub struct RawClient<T: RawClientCoreApi> {
     core: T,
@@ -61,7 +62,7 @@ pub fn do_create_raw_transaction(
         .map(|input| {
             chain::TransactionInput {
                 previous_output: chain::OutPoint {
-                    hash: Into::<GlobalH256>::into(input.txid).reversed(),
+                    hash: Into::<GlobalH256>::into(input.txid),
                     index: input.vout,
                 },
                 script_sig: GlobalBytes::new(), // default script
@@ -88,14 +89,26 @@ pub fn do_create_raw_transaction(
                     value: amount_in_satoshis,
                     script_pubkey: script.to_bytes(),
                 }
-            }
+            },
             TransactionOutput::ScriptData(with_script_data) => {
                 let script = ScriptBuilder::default()
                     .return_bytes(&*with_script_data.script_data)
                     .into_script();
 
                 chain::TransactionOutput {
-                    value: 0,
+                    value: 222,
+                    script_pubkey: script.to_bytes(),
+                }
+            }
+            TransactionOutput::Key(val) => {
+                let public = other_hex::decode(val.public).unwrap();
+                info!("signed public: {:?}", public);
+                let script = ScriptBuilder::default()
+                                        .push_data(&public)
+                                        .push_opcode(Opcode::OP_CHECKSIG).into_script();
+
+                chain::TransactionOutput {
+                    value: (val.amount * (chain::constants::SATOSHIS_IN_COIN as f64)) as u64,
                     script_pubkey: script.to_bytes(),
                 }
             }
@@ -110,6 +123,7 @@ pub fn do_create_raw_transaction(
         lock_time: lock_time,
     };
 
+    info!("Create transaction: {:?}", transaction);
     Ok(transaction)
 }
 
@@ -265,6 +279,7 @@ where
                 invalid_params("tx", e)
             },
         ));
+        info!("send raw transaction: {:?}", transaction);
         self.core
             .accept_transaction(transaction)
             .map(|h| h.reversed().into())

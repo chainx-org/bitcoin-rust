@@ -279,6 +279,7 @@ impl<T> BlockChainDatabase<T> where T: KeyValueDatabase {
 		let mut modified_meta: HashMap<H256, TransactionMeta> = HashMap::new();
 		if let Some(tx) = block.transactions.first() {
 			let meta = TransactionMeta::new_coinbase(new_best_block.number, tx.raw.outputs.len());
+            info!("store coinbase meta: {:?}", meta);
 			modified_meta.insert(tx.hash.clone(), meta);
 		}
 

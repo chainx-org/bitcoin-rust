@@ -111,7 +111,9 @@ impl BackwardsCompatibleChainVerifier {
 		// let's do preverification first
 		let deployments = BlockDeployments::new(&self.deployments, height, block_header_provider, &self.consensus);
 		let tx_verifier = MemoryPoolTransactionVerifier::new(&indexed_tx, &self.consensus, &deployments);
+        info!("tx_verifier checkout");
 		try!(tx_verifier.check());
+        info!("check ok");
 
 		let canon_tx = CanonTransaction::new(&indexed_tx);
 		// now let's do full verification
