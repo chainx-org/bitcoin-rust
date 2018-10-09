@@ -83,6 +83,15 @@ impl KeyPair {
 			hash: self.public.address_hash(),
 		}
 	}
+
+	pub fn address_p2sh(&self) -> Address {
+		Address {
+			kind: Type::P2SH,
+			network: self.private.network,
+			hash: self.public.address_hash(),
+		}
+    }
+
 }
 
 #[cfg(test)]

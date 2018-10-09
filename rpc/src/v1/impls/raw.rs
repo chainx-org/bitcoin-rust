@@ -11,9 +11,11 @@ use chain::Transaction as GlobalTransaction;
 use primitives::bytes::Bytes as GlobalBytes;
 use primitives::hash::H256 as GlobalH256;
 use std::sync::Arc;
-use keys::{self, Address, KeyPair, Private};
-use global_script::{SignatureVersion, Script, TransactionInputSigner, UnsignedTransactionInput};
+use keys::{self, Address, KeyPair, Private, Public};
+use global_script::{Opcode, verify_script, VerificationFlags, SignatureVersion, TransactionSignatureChecker,
+                    ScriptWitness, Script, TransactionInputSigner, UnsignedTransactionInput};
 use sync;
+use other_hex;
 
 pub struct RawClient<T: RawClientCoreApi> {
     core: T,
@@ -61,7 +63,7 @@ pub fn do_create_raw_transaction(
         .map(|input| {
             chain::TransactionInput {
                 previous_output: chain::OutPoint {
-                    hash: Into::<GlobalH256>::into(input.txid).reversed(),
+                    hash: Into::<GlobalH256>::into(input.txid),
                     index: input.vout,
                 },
                 script_sig: GlobalBytes::new(), // default script
@@ -88,14 +90,33 @@ pub fn do_create_raw_transaction(
                     value: amount_in_satoshis,
                     script_pubkey: script.to_bytes(),
                 }
-            }
+            },
             TransactionOutput::ScriptData(with_script_data) => {
-                let script = ScriptBuilder::default()
+                /*let script = ScriptBuilder::default()
                     .return_bytes(&*with_script_data.script_data)
-                    .into_script();
+                    .into_script();*/
+                //let public = other_hex::decode(&*with_script_data.script_data).unwrap();
+                let key_pair = KeyPair::from_private(Private { network: keys::Network::Testnet,
+                                      secret: 1.into(), compressed: true, }).unwrap();
+                let script = ScriptBuilder::default()
+                                        .push_data(key_pair.public())
+                                        .push_opcode(Opcode::OP_CHECKSIG).into_script();
+
 
                 chain::TransactionOutput {
-                    value: 0,
+                    value: 222,
+                    script_pubkey: script.to_bytes(),
+                }
+            }
+            TransactionOutput::Key(val) => {
+                let public = other_hex::decode(val.public).unwrap();
+                info!("signed public: {:?}", public);
+                let script = ScriptBuilder::default()
+                                        .push_data(&public)
+                                        .push_opcode(Opcode::OP_CHECKSIG).into_script();
+
+                chain::TransactionOutput {
+                    value: (val.amount * (chain::constants::SATOSHIS_IN_COIN as f64)) as u64,
                     script_pubkey: script.to_bytes(),
                 }
             }
@@ -110,6 +131,7 @@ pub fn do_create_raw_transaction(
         lock_time: lock_time,
     };
 
+    info!("Create transaction: {:?}", transaction);
     Ok(transaction)
 }
 
@@ -265,6 +287,7 @@ where
                 invalid_params("tx", e)
             },
         ));
+        info!("send raw transaction: {:?}", transaction);
         self.core
             .accept_transaction(transaction)
             .map(|h| h.reversed().into())
@@ -278,6 +301,7 @@ where
                 invalid_params("tx", e)
             },
         ));
+        info!("sign raw transaction 1: {:?}", transaction);
         let tx_signer = TransactionInputSigner { version: transaction.version, 
                                                  inputs: transaction.inputs.iter().map(|input|
                                                        UnsignedTransactionInput{ previous_output: input.previous_output.clone(),
@@ -288,14 +312,18 @@ where
         let private_key = Private {
             network: keys::Network::Testnet,
             secret: private_key.into(),
-            compressed: false,
+            compressed: true,
         };
         info!("sign private_key: {:?}", private_key);
         let tx_input = tx_signer.signed_input(&KeyPair::from_private(private_key).unwrap(),
                                               0, transaction.outputs[0].value,
                                               &transaction.outputs[0].clone().script_pubkey.into(),
                                               SignatureVersion::Base, sighashtype);
+        //let checker = TransactionSignatureChecker { input_index: 0, input_amount:transaction.outputs[0].value, signer: tx_signer,};
+        //assert_eq!(verify_script(&tx_input.script_sig.clone().into(), &transaction.inputs[0].clone().script_pubkey.into(),
+        //              &ScriptWitness::default(), &VerificationFlags::default().verify_p2sh(true), &checker, SignatureVersion::Base), Ok(()));
         transaction.inputs = vec![tx_input];
+        info!("sign transaction 2: {:?}", transaction);
         let transaction = serialize(&transaction);
         Ok(transaction.into()) 
     }
