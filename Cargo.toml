@@ -51,10 +51,14 @@ name = "chainx_btc"
 members = [
   "bencher",
   "key",
+  "db",
+  "miner",
   "chain",
+  "storage",
   "rpc",
   "crypto",
   "primitives",
+  "message",
   "script",
   "serialization",
   "serialization_derive" ]
