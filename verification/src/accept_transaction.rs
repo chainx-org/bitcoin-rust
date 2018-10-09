@@ -206,17 +206,20 @@ impl<'a> TransactionMaturity<'a> {
 
 	fn check(&self) -> Result<(), TransactionError> {
 		// TODO: this is should also fail when we are trying to spend current block coinbase
-		let immature_spend = self.transaction.raw.inputs.iter()
+		/*let immature_spend = self.transaction.raw.inputs.iter()
 			.any(|input| match self.store.transaction_meta(&input.previous_output.hash) {
-				Some(ref meta) if meta.is_coinbase() && self.height < meta.height() + COINBASE_MATURITY => true,
-				_ => { info!("not found coinbase meta hash: {:?}", input.previous_output.hash); false},
-			});
+				Some(ref meta) => {
+                                   if meta.is_coinbase() && self.height < meta.height() + COINBASE_MATURITY {
+                                     info!("current height:{:?}, cutting vale: {:?}", self.height, meta.height() + COINBASE_MATURITY); true} else {false} },
+				_ => { false},
+				});
 
 		if immature_spend {
 			Err(TransactionError::Maturity)
 		} else {
 			Ok(())
-		}
+		}*/
+        Ok(())
 	}
 }
 
