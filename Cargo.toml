@@ -48,4 +48,13 @@ path = "chainx_btc/main.rs"
 name = "chainx_btc"
 
 [workspace]
-members = ["bencher", "key"]
+members = [
+  "bencher",
+  "key",
+  "chain",
+  "rpc",
+  "crypto",
+  "primitives",
+  "script",
+  "serialization",
+  "serialization_derive" ]
