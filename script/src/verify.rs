@@ -55,9 +55,6 @@ impl SignatureChecker for TransactionSignatureChecker {
 		version: SignatureVersion
 	) -> bool {
 		let hash = self.signer.signature_hash(self.input_index, self.input_amount, script_code, version, sighashtype);
-        info!("check_signature input_index:{:?}, input_amount:{:?}, script_code:{:?}, version:{:?}, sighashtype:{:?}, hash:{:?}",
-              self.input_index, self.input_amount, script_code, version, sighashtype, hash);
-        info!("public: {:?}", public);
 		public.verify(&hash, signature).unwrap_or(false)
 	}
 

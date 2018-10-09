@@ -29,8 +29,6 @@ fn check_signature(
 	let hash_type = script_sig.pop().unwrap() as u32;
 	let signature = script_sig.into();
 
-    info!("--- check_signature signature:{:?}, pubic:{:?}, script_code:{:?}, hash_type:{:?}, version:{:?}",
-            &signature, public, script_code, hash_type, version);
 	checker.check_signature(&signature, &public, script_code, hash_type, version)
 }
 
@@ -259,7 +257,6 @@ pub fn verify_script(
 	let mut stack = Stack::new();
 	let mut stack_copy = Stack::new();
 	let mut had_witness = false;
-    info!("--------- verify_script");
 	eval_script(&mut stack, script_sig, flags, checker, version)?;
 
 	if flags.verify_p2sh {
@@ -267,7 +264,6 @@ pub fn verify_script(
 	}
 
 	let res = eval_script(&mut stack, script_pubkey, flags, checker, version);
-    info!("eval_script res:{:?}, script_pubkey: {:?}, flags: {:?}, version: {:?}", res, script_pubkey, flags, version);
 	if !res? {
 		return Err(Error::EvalFalse);
 	}
@@ -304,7 +300,6 @@ pub fn verify_script(
 		let pubkey2: Script = stack.pop()?.into();
 
 		let res = eval_script(&mut stack, &pubkey2, flags, checker, version)?;
-        info!("eval_script res:{:?}, script_pubkey: {:?}, flags: {:?}, version: {:?}", res, pubkey2, flags, version);
 		if !res {
 			return Err(Error::EvalFalse);
 		}
@@ -436,7 +431,6 @@ pub fn eval_script(
 	let mut exec_stack = Vec::<bool>::new();
 	let mut altstack = Stack::<Bytes>::new();
 
-    info!("eval script: {:?}", script);
 	while pc < script.len() {
 		let executing = exec_stack.iter().all(|x| *x);
 		let instruction = match script.get_instruction(pc) {
@@ -475,7 +469,6 @@ pub fn eval_script(
 			continue;
 		}
 
-        info!("eval script opcode: {:?}", opcode);
 		match opcode {
 			Opcode::OP_PUSHDATA1 |
 			Opcode::OP_PUSHDATA2 |
@@ -557,7 +550,6 @@ pub fn eval_script(
 			Opcode::OP_PUSHBYTES_74 |
 			Opcode::OP_PUSHBYTES_75 => {
 				if let Some(data) = instruction.data {
-                    info!("push pubkhash:{:?}", data);
 					stack.push(data.to_vec().into());
 				}
 			},
@@ -873,7 +865,6 @@ pub fn eval_script(
 			Opcode::OP_EQUALVERIFY => {
                 let pk1 = stack.pop()?;
                 let pk2 = stack.pop()?;
-                info!("--pk1:{:?}, --pk2:{:?}", pk1, pk2);
 				let equal = pk1 == pk2;
 				if !equal {
 					return Err(Error::EqualVerify);
@@ -1004,7 +995,6 @@ pub fn eval_script(
 			},
 			Opcode::OP_HASH160 => {
                 let ha:&[u8] = &stack.pop()?;
-                info!("---OP_HASH160:{:?}", ha);
 				let v = dhash160(ha);
 				stack.push(v.to_vec().into());
 			},
@@ -1028,7 +1018,6 @@ pub fn eval_script(
 						subscript = subscript.find_and_delete(&*signature_script);
 					},
 				}
-                info!("signature:{:?}, pubkey: {:?}, sighash: {:?}, subscript: {:?}", signature, pubkey, sighash, subscript);
 
 				check_signature_encoding(&signature, flags, version)?;
 				check_pubkey_encoding(&pubkey, flags)?;
@@ -1140,7 +1129,6 @@ pub fn eval_script(
 		return Err(Error::UnbalancedConditional);
 	}
 
-    info!("-----stak: {:?}", stack);
 	let success = !stack.is_empty() && {
 		let last = stack.last()?;
 		cast_to_bool(last)

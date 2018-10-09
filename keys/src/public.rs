@@ -33,7 +33,6 @@ impl Public {
 
 	pub fn address_hash(&self) -> AddressHash {
         let public_key: &[u8] = self; 
-        info!("address public: {:?}", public_key);
 		dhash160(public_key)
 	}
 

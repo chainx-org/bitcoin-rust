@@ -28,7 +28,5 @@ build_rpc_trait! {
 		#[rpc(name = "getrawtransaction")]
 		fn get_raw_transaction(&self, H256, Trailing<bool>) -> Result<GetRawTransactionResponse, Error>;
 
-		#[rpc(name = "signrawtransaction")]
-		fn sign_raw_transaction(&self, RawTransaction, H256) -> Result<RawTransaction, Error>;
 	}
 }

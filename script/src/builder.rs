@@ -14,7 +14,6 @@ impl Builder {
 	/// Builds p2pkh script pubkey
 	pub fn build_p2pkh(address: &AddressHash) -> Script {
         let address: &[u8] = &**address;
-        info!("build_p2pkh:{:?}", address);
 		Builder::default()
 			.push_opcode(Opcode::OP_DUP)
 			.push_opcode(Opcode::OP_HASH160)
