@@ -4,7 +4,7 @@ use super::uint::U256;
 use super::block::RawBlock;
 
 /// Response to getblock RPC request
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub enum GetBlockResponse {
 	/// When asking for short response
 	Raw(RawBlock),
