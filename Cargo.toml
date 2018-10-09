@@ -11,6 +11,7 @@ log = "0.4"
 env_logger = "0.5"
 app_dirs = { git = "https://github.com/paritytech/app-dirs-rs" }
 jsonrpc-http-server = { git = "https://github.com/ethcore/jsonrpc.git" }
+rocksdb = { git = "https://github.com/ethcore/rust-rocksdb" }
 libc = "0.2"
 clap = { version = "2", features = ["yaml"] }
 chain = { path = "chain" }
