@@ -3,8 +3,6 @@
 
 Installing `chainx_btc` from source requires `rustc` and `cargo`.
 
-Minimal supported version is `rustc 1.23.0 (766bd11c8 2018-01-01)`
-
 #### Install rustc and cargo
 
 Both `rustc` and `cargo` are a part of rust tool-chain.
@@ -31,8 +29,8 @@ sudo apt-get install build-essential
 Now let's clone `chainx_btc` and enter it's directory:
 
 ```
-git clone https://github.com/chainx-org/bitcoin-relay
-cd bitcoin-relay
+git clone https://github.com/chainx-org/bitcoin-rust
+cd bitcoin-rust
 ```
 
 `chainx_btc` can be build in two modes. `--debug` and `--release`. Debug is the default.
