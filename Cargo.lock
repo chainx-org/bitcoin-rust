@@ -1098,7 +1098,6 @@ name = "rpc"
 version = "0.1.0"
 dependencies = [
  "chain 0.1.0",
- "db 0.1.0",
  "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "jsonrpc-core 8.0.0 (git+https://github.com/ethcore/jsonrpc.git)",
  "jsonrpc-http-server 8.0.0 (git+https://github.com/ethcore/jsonrpc.git)",
