@@ -1,10 +1,11 @@
-use serde::{Serialize, Serializer};
+// Copyright 2018 Chainpool
+
 use super::hash::H256;
 use super::uint::U256;
 use super::block::RawBlock;
 
 /// Response to getblock RPC request
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum GetBlockResponse {
 	/// When asking for short response
 	Raw(RawBlock),
@@ -56,6 +57,7 @@ pub struct VerboseBlock {
 	pub nextblockhash: Option<H256>,
 }
 
+/*
 impl Serialize for GetBlockResponse {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
 		match *self {
@@ -63,7 +65,7 @@ impl Serialize for GetBlockResponse {
 			GetBlockResponse::Verbose(ref verbose_block) => verbose_block.serialize(serializer),
 		}
 	}
-}
+}*/
 
 #[cfg(test)]
 mod tests {
