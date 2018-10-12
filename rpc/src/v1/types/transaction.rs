@@ -237,7 +237,7 @@ impl<'a> Deserialize<'a> for TransactionOutputs {
 			}
 		}
 
-		deserializer.deserialize_identifier(TransactionOutputsVisitor)
+		deserializer.deserialize_any(TransactionOutputsVisitor)
 	}
 }
 
