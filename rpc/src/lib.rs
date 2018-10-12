@@ -24,6 +24,7 @@ extern crate verification;
 extern crate script as global_script;
 extern crate keys;
 extern crate hex as other_hex;
+extern crate db;
 
 pub mod v1;
 pub mod rpc_server;

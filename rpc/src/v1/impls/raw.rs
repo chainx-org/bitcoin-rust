@@ -351,6 +351,8 @@ pub mod tests {
         ) -> Result<Transaction, String> {
             Ok("0100000001ad9d38823d95f31dc6c0cb0724c11a3cf5a466ca4147254a10cd94aade6eb5b3230000006b483045022100b7683165c3ecd57b0c44bf6a0fb258dc08c328458321c8fadc2b9348d4e66bd502204fd164c58d1a949a4d39bb380f8f05c9f6b3e9417f06bf72e5c068428ca3578601210391c35ac5ee7cf82c5015229dcff89507f83f9b8c952b8fecfa469066c1cb44ccffffffff0170f30500000000001976a914801da3cb2ed9e44540f4b982bde07cd3fbae264288ac00000000".into())
         }
+        fn get_raw_transaction(&self, _hash: H256, _verbose: Trailing<bool>)
+           -> Result<GetRawTransactionResponse, Error> {unreachable!();}
     }
 
     impl RawClientCoreApi for ErrorRawClientCore {
@@ -366,6 +368,8 @@ pub mod tests {
         ) -> Result<Transaction, String> {
             Err("error".to_owned())
         }
+        fn get_raw_transaction(&self, _hash: H256, _verbose: Trailing<bool>)
+           -> Result<GetRawTransactionResponse, Error> {unreachable!();}
     }
 
     #[test]
