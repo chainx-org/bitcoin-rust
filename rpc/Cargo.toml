@@ -22,6 +22,7 @@ serialization = { path = "../serialization" }
 chain = { path = "../chain" }
 primitives = { path = "../primitives" }
 p2p = { path = "../p2p" }
+db = { path = "../db" }
 network = { path = "../network" }
 storage = { path = "../storage" }
 miner = { path = "../miner" }
