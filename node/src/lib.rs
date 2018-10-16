@@ -67,7 +67,7 @@ pub fn build_block(
    let private_key = keys::Private {
        network: keys::Network::Testnet,
        secret: SECRET.into(),
-       compressed: true,
+       compressed: false,
     };
     info!("miner private_key:{:?}", private_key);
     let kp = keys::KeyPair::from_private(private_key).unwrap();
