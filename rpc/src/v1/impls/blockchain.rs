@@ -214,7 +214,7 @@ where
         let private_key = Private {
             network: keys::Network::Testnet,
             secret: private_key.into(),
-            compressed: true,
+            compressed: false,
         };
         let txout = self.core.transaction_out(transaction.inputs[0].previous_output.clone()).unwrap();
         let tx_input = tx_signer.signed_input(&KeyPair::from_private(private_key).unwrap(),
