@@ -9,7 +9,7 @@ use v1::helpers::errors::{block_not_found, block_at_height_not_found, transactio
 use jsonrpc_macros::Trailing;
 use jsonrpc_core::Error;
 use {storage, chain};
-use chain::OutPoint;
+use chain::{ OutPoint, TransactionOutput };
 use verification;
 use network::Network;
 use primitives::hash::H256 as GlobalH256;
@@ -31,6 +31,7 @@ pub trait BlockChainClientCoreApi: Send + Sync + 'static {
     fn raw_block(&self, hash: GlobalH256) -> Option<RawBlock>;
     fn verbose_block(&self, hash: GlobalH256) -> Option<VerboseBlock>;
     fn verbose_transaction_out(&self, prev_out: OutPoint) -> Result<GetTxOutResponse, Error>;
+    fn transaction_out(&self, prev_out: OutPoint) -> Option<TransactionOutput>;
 }
 
 pub struct BlockChainClientCore {
@@ -63,6 +64,10 @@ impl BlockChainClientCoreApi for BlockChainClientCore {
 
     fn difficulty(&self) -> f64 {
         self.storage.difficulty()
+    }
+
+    fn transaction_out(&self, prev_out: OutPoint) -> Option<TransactionOutput> {
+        self.storage.transaction_output(&prev_out, usize::max_value())
     }
 
     fn raw_block(&self, hash: GlobalH256) -> Option<RawBlock> {
@@ -211,11 +216,10 @@ where
             secret: private_key.into(),
             compressed: true,
         };
-        let txout = self.core.verbose_transaction_out(transaction.inputs[0].previous_output.clone()).unwrap();
-        let script_pubkey = txout.script.hex.to_vec().into();
+        let txout = self.core.transaction_out(transaction.inputs[0].previous_output.clone()).unwrap();
         let tx_input = tx_signer.signed_input(&KeyPair::from_private(private_key).unwrap(),
-                                              0, transaction.outputs[0].value,
-                                              &script_pubkey,
+                                              0, txout.value,
+                                              &txout.script_pubkey.into(),
                                               SignatureVersion::Base, sighashtype);
         //let checker = TransactionSignatureChecker { input_index: 0, input_amount:transaction.outputs[0].value, signer: tx_signer,};
         //assert_eq!(verify_script(&tx_input.script_sig.clone().into(), &transaction.inputs[0].clone().script_pubkey.into(),
