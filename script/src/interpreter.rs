@@ -29,6 +29,7 @@ fn check_signature(
 	let hash_type = script_sig.pop().unwrap() as u32;
 	let signature = script_sig.into();
 
+    trace!("sig:{:?}, key:{:?}, subscript:{:?}, hash_type:{:?}, version:{:?}", signature, public, script_code, hash_type, version);
 	checker.check_signature(&signature, &public, script_code, hash_type, version)
 }
 
@@ -469,6 +470,7 @@ pub fn eval_script(
 			continue;
 		}
 
+        trace!("--Opcode: {:?}", opcode);
 		match opcode {
 			Opcode::OP_PUSHDATA1 |
 			Opcode::OP_PUSHDATA2 |
@@ -550,7 +552,9 @@ pub fn eval_script(
 			Opcode::OP_PUSHBYTES_74 |
 			Opcode::OP_PUSHBYTES_75 => {
 				if let Some(data) = instruction.data {
-					stack.push(data.to_vec().into());
+                    if data.len() != 0 {
+					    stack.push(data.to_vec().into());
+                    }
 				}
 			},
 			Opcode::OP_1NEGATE |
@@ -1038,6 +1042,7 @@ pub fn eval_script(
 				}
 			},
 			Opcode::OP_CHECKMULTISIG | Opcode::OP_CHECKMULTISIGVERIFY => {
+                trace!("--------multi sig stack:{:?}", stack);
 				let keys_count = Num::from_slice(&stack.pop()?, flags.verify_minimaldata, 4)?;
 				if keys_count < 0.into() || keys_count > script::MAX_PUBKEYS_PER_MULTISIG.into() {
 					return Err(Error::PubkeyCount);
@@ -1045,6 +1050,7 @@ pub fn eval_script(
 
 				let keys_count: usize = keys_count.into();
 				let keys = (0..keys_count).into_iter().map(|_| stack.pop()).collect::<Result<Vec<_>, _>>()?;
+                trace!("------keys_count:{:?}, keys:{:?}", keys_count, keys);
 
 				let sigs_count = Num::from_slice(&stack.pop()?, flags.verify_minimaldata, 4)?;
 				if sigs_count < 0.into() || sigs_count > keys_count.into() {
@@ -1052,7 +1058,9 @@ pub fn eval_script(
 				}
 
 				let sigs_count: usize = sigs_count.into();
+                trace!("----------stack: {:?}", stack);
 				let sigs = (0..sigs_count).into_iter().map(|_| stack.pop()).collect::<Result<Vec<_>, _>>()?;
+                trace!("---sigs_count:{:?}, sigs:{:?}", sigs_count, sigs);
 
 				let mut subscript = script.subscript(begincode);
 
@@ -1079,7 +1087,9 @@ pub fn eval_script(
 					check_signature_encoding(&sig, flags, version)?;
 					check_pubkey_encoding(&key, flags)?;
 
+                    trace!("-------sig: {:?}, key: {:?}", sig, key);
 					let ok = check_signature(checker, sig.into(), key.into(), &subscript, version);
+                    trace!("-------ok: {:?}", ok);
 					if ok {
 						s += 1;
 					}
@@ -1088,10 +1098,12 @@ pub fn eval_script(
 					success = sigs.len() - s <= keys.len() - k;
 				}
 
-				if !stack.pop()?.is_empty() && flags.verify_nulldummy {
+                trace!("-----------stack:{:?}", stack);
+				/*if !stack.pop()?.is_empty() && flags.verify_nulldummy {
 					return Err(Error::SignatureNullDummy);
-				}
+				}*/
 
+                trace!("-----------opcode:{:?}", opcode);
 				match opcode {
 					Opcode::OP_CHECKMULTISIG => {
 						if success {
@@ -2104,15 +2116,18 @@ mod tests {
 	// https://blockchain.info/rawtx/02b082113e35d5386285094c2829e7e2963fa0b5369fb7f4b79c4c90877dcd3d
 	#[test]
 	fn test_check_transaction_multisig() {
-		let tx: Transaction = "01000000013dcd7d87904c9cb7f4b79f36b5a03f96e2e729284c09856238d5353e1182b00200000000fd5e0100483045022100deeb1f13b5927b5e32d877f3c42a4b028e2e0ce5010fdb4e7f7b5e2921c1dcd2022068631cb285e8c1be9f061d2968a18c3163b780656f30a049effee640e80d9bff01483045022100ee80e164622c64507d243bd949217d666d8b16486e153ac6a1f8e04c351b71a502203691bef46236ca2b4f5e60a82a853a33d6712d6a1e7bf9a65e575aeb7328db8c014cc9524104a882d414e478039cd5b52a92ffb13dd5e6bd4515497439dffd691a0f12af9575fa349b5694ed3155b136f09e63975a1700c9f4d4df849323dac06cf3bd6458cd41046ce31db9bdd543e72fe3039a1f1c047dab87037c36a669ff90e28da1848f640de68c2fe913d363a51154a0c62d7adea1b822d05035077418267b1a1379790187410411ffd36c70776538d079fbae117dc38effafb33304af83ce4894589747aee1ef992f63280567f52f5ba870678b4ab4ff6c8ea600bd217870a8b4f1f09f3a8e8353aeffffffff0130d90000000000001976a914569076ba39fc4ff6a2291d9ea9196d8c08f9c7ab88ac00000000".into();
+		//let tx: Transaction = "01000000013dcd7d87904c9cb7f4b79f36b5a03f96e2e729284c09856238d5353e1182b00200000000fd5e0100483045022100deeb1f13b5927b5e32d877f3c42a4b028e2e0ce5010fdb4e7f7b5e2921c1dcd2022068631cb285e8c1be9f061d2968a18c3163b780656f30a049effee640e80d9bff01483045022100ee80e164622c64507d243bd949217d666d8b16486e153ac6a1f8e04c351b71a502203691bef46236ca2b4f5e60a82a853a33d6712d6a1e7bf9a65e575aeb7328db8c014cc9524104a882d414e478039cd5b52a92ffb13dd5e6bd4515497439dffd691a0f12af9575fa349b5694ed3155b136f09e63975a1700c9f4d4df849323dac06cf3bd6458cd41046ce31db9bdd543e72fe3039a1f1c047dab87037c36a669ff90e28da1848f640de68c2fe913d363a51154a0c62d7adea1b822d05035077418267b1a1379790187410411ffd36c70776538d079fbae117dc38effafb33304af83ce4894589747aee1ef992f63280567f52f5ba870678b4ab4ff6c8ea600bd217870a8b4f1f09f3a8e8353aeffffffff0130d90000000000001976a914569076ba39fc4ff6a2291d9ea9196d8c08f9c7ab88ac00000000".into();
+        let tx: Transaction = "0100000001cdccfdcfa2e50bdac60c3f23f7424fe3761a8a943c82322d9b3b8a24f009e0b300000000fdfe00004830450221009bd31bbdb125d05affe564ade3f933dfebc657f3e5884b8cdc4023cd6ffae28d022010717cd1114ee8377e7e692fd44b3ddbd8c070063a70bf88fa020bcb2fe985fb01473044022054033b85491fc71b4a66053b057e81edb3d2cede62437aa97e2154e8a3cf185e022037811fc44e6c3c7524981186240cf9481eddca8dbecca722bec4979044b8325f01004c6952210257aff1270e3163aaae9d972b3d09a2385e0d4877501dbeca3ee045f8de00d21c2103fd58c689594b87bbe20a9a00091d074dc0d9f49a988a7ad4c2575adeda1b507c2102bb2a5aa53ba7c0d77bdd86bb9553f77dd0971d3a6bb6ad609787aa76eb17b6b653aeffffffff01640000000000000032373661393134636664366231386666336338383364306662323632343461363935653839323739653637336535613838616300000000".into();
 		let signer: TransactionInputSigner = tx.into();
 		let checker = TransactionSignatureChecker {
 			signer: signer,
 			input_index: 0,
 			input_amount: 0,
 		};
-		let input: Script = "00483045022100deeb1f13b5927b5e32d877f3c42a4b028e2e0ce5010fdb4e7f7b5e2921c1dcd2022068631cb285e8c1be9f061d2968a18c3163b780656f30a049effee640e80d9bff01483045022100ee80e164622c64507d243bd949217d666d8b16486e153ac6a1f8e04c351b71a502203691bef46236ca2b4f5e60a82a853a33d6712d6a1e7bf9a65e575aeb7328db8c014cc9524104a882d414e478039cd5b52a92ffb13dd5e6bd4515497439dffd691a0f12af9575fa349b5694ed3155b136f09e63975a1700c9f4d4df849323dac06cf3bd6458cd41046ce31db9bdd543e72fe3039a1f1c047dab87037c36a669ff90e28da1848f640de68c2fe913d363a51154a0c62d7adea1b822d05035077418267b1a1379790187410411ffd36c70776538d079fbae117dc38effafb33304af83ce4894589747aee1ef992f63280567f52f5ba870678b4ab4ff6c8ea600bd217870a8b4f1f09f3a8e8353ae".into();
-		let output: Script = "a9141a8b0026343166625c7475f01e48b5ede8c0252e87".into();
+		//let input: Script = "00483045022100deeb1f13b5927b5e32d877f3c42a4b028e2e0ce5010fdb4e7f7b5e2921c1dcd2022068631cb285e8c1be9f061d2968a18c3163b780656f30a049effee640e80d9bff01483045022100ee80e164622c64507d243bd949217d666d8b16486e153ac6a1f8e04c351b71a502203691bef46236ca2b4f5e60a82a853a33d6712d6a1e7bf9a65e575aeb7328db8c014cc9524104a882d414e478039cd5b52a92ffb13dd5e6bd4515497439dffd691a0f12af9575fa349b5694ed3155b136f09e63975a1700c9f4d4df849323dac06cf3bd6458cd41046ce31db9bdd543e72fe3039a1f1c047dab87037c36a669ff90e28da1848f640de68c2fe913d363a51154a0c62d7adea1b822d05035077418267b1a1379790187410411ffd36c70776538d079fbae117dc38effafb33304af83ce4894589747aee1ef992f63280567f52f5ba870678b4ab4ff6c8ea600bd217870a8b4f1f09f3a8e8353ae".into();
+        let input: Script = "004830450221009bd31bbdb125d05affe564ade3f933dfebc657f3e5884b8cdc4023cd6ffae28d022010717cd1114ee8377e7e692fd44b3ddbd8c070063a70bf88fa020bcb2fe985fb01473044022054033b85491fc71b4a66053b057e81edb3d2cede62437aa97e2154e8a3cf185e022037811fc44e6c3c7524981186240cf9481eddca8dbecca722bec4979044b8325f01004c6952210257aff1270e3163aaae9d972b3d09a2385e0d4877501dbeca3ee045f8de00d21c2103fd58c689594b87bbe20a9a00091d074dc0d9f49a988a7ad4c2575adeda1b507c2102bb2a5aa53ba7c0d77bdd86bb9553f77dd0971d3a6bb6ad609787aa76eb17b6b653ae".into();
+        //let output: Script = "a9141a8b0026343166625c7475f01e48b5ede8c0252e87".into();
+        let output: Script = "a9146aca0cda1b5c0dfee15cbc10cdfe4592f7da59a287".into();
 		let flags = VerificationFlags::default()
 			.verify_p2sh(true);
 		assert_eq!(verify_script(&input, &output, &ScriptWitness::default(), &flags, &checker, SignatureVersion::Base), Ok(()));
