@@ -1,6 +1,6 @@
 //! Compact representation of `U256`
 
-use bigint::{U256, Uint};
+use substrate_primitives::U256;
 
 /// Compact representation of `U256`
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -101,8 +101,7 @@ impl Compact {
 
 #[cfg(test)]
 mod tests {
-	use bigint::{U256, Uint};
-	use super::Compact;
+	use super::*;
 
 	#[test]
 	fn test_compact_to_u256() {

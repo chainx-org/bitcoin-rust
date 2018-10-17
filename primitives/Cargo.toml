@@ -1,10 +1,18 @@
 [package]
 name = "primitives"
 version = "0.1.0"
-authors = ["debris <marek.kotewicz@gmail.com>"]
+authors = ["debris <marek.kotewicz@gmail.com> chainpool & <http://chainx.org>"]
 
 [dependencies]
 heapsize = "0.4"
-rustc-hex = "2"
-byteorder = "1.0"
-bigint = "1.0"
+rustc-hex = { version = "2.0", default-features = false }
+byteorder = { version = "1.1", default-features = false }
+substrate-primitives = { git = "https://github.com/paritytech/substrate", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+    "rustc-hex/std",
+    "byteorder/std",
+    "substrate-primitives/std",
+]
