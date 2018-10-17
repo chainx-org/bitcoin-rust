@@ -1,7 +1,7 @@
 use byteorder::{WriteBytesExt, LittleEndian};
 use primitives::bytes::Bytes;
 use primitives::hash::H256;
-use primitives::bigint::{U256, Uint};
+use primitives::U256;
 use primitives::compact::Compact;
 use chain::{merkle_root, Transaction};
 use crypto::dhash256;
@@ -136,7 +136,7 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 				return Some(solution);
 			}
 		}
-		extranonce = extranonce + 1.into();
+		extranonce = extranonce + U256::from(1);
 	}
 
 	None

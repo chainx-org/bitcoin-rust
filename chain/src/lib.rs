@@ -23,7 +23,7 @@ pub trait RepresentH256 {
 	fn h256(&self) -> hash::H256;
 }
 
-pub use primitives::{hash, bytes, bigint, compact};
+pub use primitives::{hash, bytes, compact};
 
 pub use block::Block;
 pub use block_header::BlockHeader;

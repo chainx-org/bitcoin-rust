@@ -9,3 +9,4 @@ extern crate substrate_primitives;
 pub mod bytes;
 pub mod compact;
 pub mod hash;
+pub use substrate_primitives::U256;

@@ -1,6 +1,6 @@
 use primitives::compact::Compact;
 use primitives::hash::H256;
-use primitives::bigint::{Uint, U256};
+use primitives::U256;
 use chain::{IndexedBlockHeader, BlockHeader};
 use network::{Network, ConsensusParams, BitcoinCashConsensusParams};
 use storage::BlockHeaderProvider;
@@ -114,7 +114,7 @@ fn work_required_bitcoin_cash_adjusted(parent_header: IndexedBlockHeader, time: 
 		// we can deduce how much work we expect to be produced in the targeted time
 		// between blocks.
 		let mut work = compute_work_between_blocks(first_header.hash(), &last_header, store);
-		work = work * TARGET_SPACING_SECONDS.into();
+		work = work * U256::from(TARGET_SPACING_SECONDS);
 
 		// In order to avoid difficulty cliffs, we bound the amplitude of the
 		// adjustement we are going to do.
@@ -126,7 +126,7 @@ fn work_required_bitcoin_cash_adjusted(parent_header: IndexedBlockHeader, time: 
 			actual_timespan = 72 * TARGET_SPACING_SECONDS;
 		}
 
-		let work = work / actual_timespan.into();
+		let work = work / U256::from(actual_timespan);
 
 		// We need to compute T = (2^256 / W) - 1 but 2^256 doesn't fit in 256 bits.
 		// By expressing 1 as W / W, we get (2^256 - W) / W, and we can compute

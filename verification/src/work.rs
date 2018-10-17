@@ -1,7 +1,7 @@
 use std::cmp;
 use primitives::compact::Compact;
 use primitives::hash::H256;
-use primitives::bigint::U256;
+use primitives::U256;
 use chain::{IndexedBlockHeader, BlockHeader};
 use network::{Network, ConsensusParams, ConsensusFork};
 use storage::{BlockHeaderProvider, BlockRef};
@@ -132,8 +132,8 @@ pub fn work_required_retarget(parent_header: BlockHeader, height: u32, store: &B
 	let mut retarget: U256 = last_bits.into();
 	let maximum: U256 = max_work_bits.into();
 
-	retarget = retarget * retarget_timespan(retarget_timestamp, last_timestamp).into();
-	retarget = retarget / TARGET_TIMESPAN_SECONDS.into();
+	retarget = retarget * U256::from(retarget_timespan(retarget_timestamp, last_timestamp));
+	retarget = retarget / U256::from(TARGET_TIMESPAN_SECONDS);
 
 	if retarget > maximum {
 		max_work_bits

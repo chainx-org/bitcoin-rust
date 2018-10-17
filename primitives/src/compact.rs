@@ -138,6 +138,6 @@ mod tests {
 	#[test]
 	fn difficulty() {
 		let nbits = Compact::new(0x1b0404cb);
-		assert_eq!(nbits.to_f64(), 16307.420938523994f64);
+		assert_eq!(nbits.to_f64(), 16307.420938523983);
 	}
 }
