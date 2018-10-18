@@ -1,7 +1,7 @@
 // Copyright 2018 Chainpool
 
-use digest::Digest;
-use rstd::{ptr, mem, cmp};
+use rstd::{ptr, mem};
+use rstd::ops::*;
 use primitives::io;
 
 pub fn write_u64_be(dst: &mut[u8], mut input: u64) {

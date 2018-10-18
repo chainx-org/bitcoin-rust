@@ -374,6 +374,7 @@ pub fn sha512_digest_block(state: &mut [u64; 8], block: &[u8/*; 128*/]) {
 
 // A structure that represents that state of a digest computation for the SHA-2 512 family
 // of digest functions
+/*
 #[derive(Copy, Clone)]
 struct Engine512State {
     h: [u64; 8]
@@ -394,6 +395,7 @@ impl Engine512State {
         sha512_digest_block(&mut self.h, data);
     }
 }
+*/
 
 pub const K64: [u64; 80] = [
     0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
@@ -432,6 +434,7 @@ pub const K64X2: [u64x2; 40] = [
     u64x2(K64[73], K64[72]), u64x2(K64[75], K64[74]), u64x2(K64[77], K64[76]), u64x2(K64[79], K64[78])
 ];
 
+/*
 #[derive(Copy, Clone)]
 struct Engine512 {
     length_bits: (u64, u64),
@@ -483,6 +486,7 @@ impl Engine512 {
         self.finished = true;
     }
 }
+*/
 
 #[derive(Clone, Copy)]
 struct Engine256State {
