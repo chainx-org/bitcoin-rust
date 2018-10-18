@@ -31,7 +31,7 @@ pub fn impl_deserializable(ast: &syn::DeriveInput) -> quote::Tokens {
 		#[allow(non_upper_case_globals, unused_attributes, unused_qualifications)]
 		const #dummy_const: () = {
 			extern crate serialization;
-			use std::io;
+			use primitives::io;
 			#impl_block
 		};
 	}

@@ -5,6 +5,7 @@ use rstd::prelude::*;
 use byteorder::ByteOrder;
 pub use rstd::result::Result;
 
+#[cfg_attr(feature = "std", derive(Debug))]
 pub enum ErrorKind {
      Interrupted,
      UnexpectedEof,   

@@ -1,5 +1,6 @@
 // Copyright 2018 Chainpool
 
+#![cfg_attr(not(feature = "std"), no_std)]
 extern crate rustc_hex as hex;
 extern crate heapsize;
 extern crate primitives;
@@ -7,6 +8,10 @@ extern crate bitcrypto as crypto;
 extern crate serialization as ser;
 #[macro_use]
 extern crate serialization_derive;
+
+#[allow(unused_imports)]
+#[macro_use]
+extern crate sr_std as rstd;
 
 pub mod constants;
 

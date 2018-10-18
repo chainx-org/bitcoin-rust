@@ -235,7 +235,7 @@ impl Deserializable for Transaction {
 		let read_witness = if inputs.is_empty() {
 			let witness_flag: u8 = reader.read()?;
 			if witness_flag != WITNESS_FLAG {
-				return Err(Error::MalformedData);
+				return Err(io::ErrorKind::MalformedData);
 			}
 
 			inputs = reader.read_list()?;

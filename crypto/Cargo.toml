@@ -9,6 +9,6 @@ primitives = { path = "../primitives", default-features = false }
 sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
 
 [features]
-default = []
+default = ["std"]
 
 std = [ "siphasher", "primitives/std", "sr-std/std", ]

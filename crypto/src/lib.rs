@@ -173,6 +173,7 @@ pub fn dhash256(input: &[u8]) -> H256 {
 #[cfg(feature = "std")]
 #[inline]
 pub fn siphash24(key0: u64, key1: u64, input: &[u8]) -> u64 {
+    use std::hash::Hasher;
 	let mut hasher = SipHasher24::new_with_keys(key0, key1);
 	hasher.write(input);
 	hasher.finish()

@@ -8,8 +8,11 @@ use std::{fmt, io, marker};
 use rstd::prelude::*;
 use io;
 use rstd::{ops, vec};
-use hex::{ToHex, FromHex, FromHexError};
-//use heapsize::HeapSizeOf;
+#[cfg(feature = "std")]
+use hex::ToHex;
+//use hex::{ToHex, FromHex, FromHexError};
+#[cfg(feature = "std")]
+use fixed_hash::heapsize::HeapSizeOf;
 
 /// Wrapper around `Vec<u8>`
 #[derive(Default, PartialEq, Clone, Eq)]
@@ -41,12 +44,12 @@ impl Bytes {
 	}
 }
 
-/*
+#[cfg(feature = "std")]
 impl HeapSizeOf for Bytes {
 	fn heap_size_of_children(&self) -> usize {
 		self.0.heap_size_of_children()
 	}
-}*/
+}
 
 impl<'a> From<&'a [u8]> for Bytes {
 	fn from(v: &[u8]) -> Self {
@@ -91,12 +94,12 @@ impl io::Write for Bytes {
 	}
 }
 
-/*
-impl fmt::Debug for Bytes {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+#[cfg(feature = "std")]
+impl std::fmt::Debug for Bytes {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		f.write_str(&self.0.to_hex::<String>())
 	}
-}*/
+}
 
 impl ops::Deref for Bytes {
 	type Target = Vec<u8>;

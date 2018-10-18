@@ -1,13 +1,25 @@
 [package]
 name = "chain"
 version = "0.1.0"
-authors = ["debris <marek.kotewicz@gmail.com>"]
+authors = [ "debris <marek.kotewicz@gmail.com> & Chainpool <http://chainx.org>" ]
 
 [dependencies]
-rustc-hex = "2"
-heapsize = "0.4"
-bitcrypto = { path = "../crypto" }
-primitives = { path = "../primitives" }
-serialization = { path = "../serialization" }
-serialization_derive = { path = "../serialization_derive" }
+rustc-hex = { version = "2", optional = true }
+heapsize = { version = "0.4", optional = true }
+bitcrypto = { path = "../crypto", default-features = false }
+primitives = { path = "../primitives", default-features = false }
+serialization = { path = "../serialization", default-features = false }
+serialization_derive = { path = "../serialization_derive", optional = true }
+sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
 
+[features]
+default = ["std"]
+std = [
+    "rustc-hex",
+    "heapsize",
+    "bitcrypto/std",
+    "primitives/std",
+    "serialization/std",
+    "serialization_derive",
+    "sr-std/std",
+]
