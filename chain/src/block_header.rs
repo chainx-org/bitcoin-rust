@@ -1,11 +1,17 @@
-use std::fmt;
+// Copyright 2018 Chainpool
+
+#[cfg(feature = "std")]
 use hex::FromHex;
-use ser::{deserialize, serialize};
+#[cfg(feature = "std")]
+use ser::deserialize;
+use ser::{serialize, Serializable, Stream, Reader, Deserializable};
 use crypto::dhash256;
 use compact::Compact;
 use hash::H256;
+use primitives::io;
+use rstd::result::Result;
 
-#[derive(PartialEq, Clone, Serializable, Deserializable)]
+#[derive(PartialEq, Clone)]
 pub struct BlockHeader {
 	pub version: u32,
 	pub previous_header_hash: H256,
@@ -15,14 +21,39 @@ pub struct BlockHeader {
 	pub nonce: u32,
 }
 
+impl Serializable for BlockHeader {
+     fn serialize(&self , stream: &mut Stream) {
+         stream.append(&self.version)
+               .append(&self.previous_header_hash)
+               .append(&self.merkle_root_hash)
+               .append(&self.time)
+               .append(&self.bits)
+               .append(&self.nonce);
+     }
+}
+
+impl Deserializable for BlockHeader {
+      fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
+          Ok(BlockHeader{
+              version: reader.read()?,
+              previous_header_hash: reader.read()?,
+              merkle_root_hash: reader.read()?,
+              time: reader.read()?,
+              bits: reader.read()?,
+              nonce: reader.read()?
+          })
+      }
+}
+
 impl BlockHeader {
 	pub fn hash(&self) -> H256 {
 		dhash256(&serialize(self))
 	}
 }
 
-impl fmt::Debug for BlockHeader {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+#[cfg(feature = "std")]
+impl std::fmt::Debug for BlockHeader {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		f.debug_struct("BlockHeader")
 			.field("version", &self.version)
 			.field("previous_header_hash", &self.previous_header_hash.clone().reverse())
@@ -34,6 +65,7 @@ impl fmt::Debug for BlockHeader {
 	}
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for BlockHeader {
 	fn from(s: &'static str) -> Self {
 		deserialize(&s.from_hex::<Vec<u8>>().unwrap() as &[u8]).unwrap()

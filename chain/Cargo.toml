@@ -9,17 +9,15 @@ heapsize = { version = "0.4", optional = true }
 bitcrypto = { path = "../crypto", default-features = false }
 primitives = { path = "../primitives", default-features = false }
 serialization = { path = "../serialization", default-features = false }
-serialization_derive = { path = "../serialization_derive", optional = true }
 sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
 
 [features]
-default = ["std"]
+default = []
 std = [
     "rustc-hex",
     "heapsize",
     "bitcrypto/std",
     "primitives/std",
     "serialization/std",
-    "serialization_derive",
     "sr-std/std",
 ]

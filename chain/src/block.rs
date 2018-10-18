@@ -1,16 +1,42 @@
+// copyright 2018 Chainpool
+
+#[cfg(feature = "std")]
 use hex::FromHex;
+#[cfg(feature = "std")]
+use ser::deserialize;
 use hash::H256;
-use ser::{deserialize};
 use merkle_root::merkle_root;
 use {BlockHeader, Transaction};
 use super::RepresentH256;
+use rstd::prelude::Vec;
+use primitives::io;
+use ser::{Error, Serializable, Deserializable, Stream, Reader};
 
-#[derive(Debug, PartialEq, Clone, Serializable, Deserializable)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Clone)]
 pub struct Block {
 	pub block_header: BlockHeader,
 	pub transactions: Vec<Transaction>,
 }
 
+impl Serializable for Block {
+	fn serialize(&self, stream: &mut Stream) {
+		stream
+			.append(&self.block_header)
+			.append_list(&self.transactions);
+	}
+}
+
+impl Deserializable for Block {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, Error> where Self: Sized, T: io::Read {
+		Ok(Block {
+			block_header: reader.read()?,
+			transactions: reader.read_list()?,
+		})
+	}
+}
+
+#[cfg(feature = "std")]
 impl From<&'static str> for Block {
 	fn from(s: &'static str) -> Self {
 		deserialize(&s.from_hex::<Vec<u8>>().unwrap() as &[u8]).unwrap()

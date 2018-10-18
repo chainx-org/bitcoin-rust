@@ -13,6 +13,7 @@ pub struct IndexedTransaction {
 	pub raw: Transaction,
 }
 
+#[cfg(feature = "std")]
 impl std::fmt::Debug for IndexedTransaction {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		f.debug_struct("IndexedTransaction")
