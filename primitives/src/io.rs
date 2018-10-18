@@ -1,12 +1,16 @@
 // Copyright 2018 Chainpool
 
-use rstd::{ptr, cmp, result::Result};
+use rstd::{ptr, mem, cmp, result::Result};
 use rstd::prelude::*;
+use byteorder::ByteOrder;
 
 pub enum ErrorKind {
      Interrupted,
      UnexpectedEof,   
      WriteZero,
+     MalformedData,
+     UnexpectedEnd,
+     UnreadData,
 }
 
 pub type Error = ErrorKind;
@@ -98,6 +102,48 @@ pub trait Read {
     fn take(self, limit: u64) -> Take<Self> where Self: Sized {
         Take { inner: self, limit: limit }
     }
+
+    fn read_u8(&mut self) -> Result<u8, Error> {
+        let mut buf = [0; 1];
+        self.read_exact(&mut buf)?;
+        Ok(buf[0])
+    }
+
+    fn read_u16<BO: ByteOrder>(&mut self) -> Result<u16, Error> {
+        let mut buf = [0; 2];
+        self.read_exact(&mut buf)?;
+        Ok(BO::read_u16(&buf))
+    }
+
+    fn read_u32<BO: ByteOrder>(&mut self) -> Result<u32, Error> {
+        let mut buf = [0; 4];
+        self.read_exact(&mut buf)?;
+        Ok(BO::read_u32(&buf))
+    }
+
+    fn read_u64<BO: ByteOrder>(&mut self) -> Result<u64, Error> {
+        let mut buf = [0; 8];
+        self.read_exact(&mut buf)?;
+        Ok(BO::read_u64(&buf))
+    }
+
+    fn read_i16<BO: ByteOrder>(&mut self) -> Result<i16, Error> {
+        let mut buf = [0; 2];
+        self.read_exact(&mut buf)?;
+        Ok(BO::read_i16(&buf))
+    }
+
+    fn read_i32<BO: ByteOrder>(&mut self) -> Result<i32, Error> {
+        let mut buf = [0; 4];
+        self.read_exact(&mut buf)?;
+        Ok(BO::read_i32(&buf))
+    }
+
+    fn read_i64<BO: ByteOrder>(&mut self) -> Result<i64, Error> {
+        let mut buf = [0; 8];
+        self.read_exact(&mut buf)?;
+        Ok(BO::read_i64(&buf))
+    }
 }
 
 pub struct Initializer(bool);
@@ -143,6 +189,48 @@ pub trait Write {
     }
 
     fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
+
+    fn write_u8(&mut self, val: u8) -> Result<(), Error> {
+        let mut buf = [0; 1];
+        buf[0] = val;
+        self.write_all(&buf)
+    }
+
+    fn write_u16<BO: ByteOrder>(&mut self, val: u16) -> Result<(), Error> {
+        let mut buf = [0; 2];
+        BO::write_u16(&mut buf, val);
+        self.write_all(&buf)
+    }
+
+    fn write_u32<BO: ByteOrder>(&mut self, val: u32) -> Result<(), Error> {
+        let mut buf = [0; 4];
+        BO::write_u32(&mut buf, val);
+        self.write_all(&buf)
+    }
+
+    fn write_u64<BO: ByteOrder>(&mut self, val: u64) -> Result<(), Error> {
+        let mut buf = [0; 8];
+        BO::write_u64(&mut buf, val);
+        self.write_all(&buf)
+    }
+
+    fn write_i16<BO: ByteOrder>(&mut self, val: i16) -> Result<(), Error> {
+        let mut buf = [0; 2];
+        BO::write_i16(&mut buf, val);
+        self.write_all(&buf)
+    }
+
+    fn write_i32<BO: ByteOrder>(&mut self, val: i32) -> Result<(), Error> {
+        let mut buf = [0; 4];
+        BO::write_i32(&mut buf, val);
+        self.write_all(&buf)
+    }
+
+    fn write_i64<BO: ByteOrder>(&mut self, val: i64) -> Result<(), Error> {
+        let mut buf = [0; 8];
+        BO::write_i64(&mut buf, val);
+        self.write_all(&buf)
+    }
 }
 
 pub struct Take<T> {
@@ -280,4 +368,44 @@ impl<'a> Read for &'a [u8] {
         *self = &self[len..];
         Ok(len)
     }
+}
+
+impl<'a> Write for &'a mut [u8] {
+    #[inline]
+    fn write(&mut self, data: &[u8]) -> Result<usize, Error> {
+        let amt = cmp::min(data.len(), self.len());
+        let (a, b) = mem::replace(self, &mut []).split_at_mut(amt);
+        a.copy_from_slice(&data[..amt]);
+        *self = b;
+        Ok(amt)
+    }
+
+    #[inline]
+    fn write_all(&mut self, data: &[u8]) -> Result<(), Error> {
+        if self.write(data)? == data.len() {
+            Ok(())
+        } else {
+            Err(ErrorKind::WriteZero)
+        }
+    }
+
+    #[inline]
+    fn flush(&mut self) -> Result<(), Error> { Ok(()) }
+}
+
+impl Write for Vec<u8> {
+    #[inline]
+    fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
+        self.extend_from_slice(buf);
+        Ok(buf.len())
+    }
+
+    #[inline]
+    fn write_all(&mut self, buf: &[u8]) -> Result<(), Error> {
+        self.extend_from_slice(buf);
+        Ok(())
+    }
+
+    #[inline]
+    fn flush(&mut self) -> Result<(), Error> { Ok(()) }
 }

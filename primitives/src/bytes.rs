@@ -6,7 +6,8 @@ use std::{fmt, io, marker};
 */
 
 use rstd::prelude::*;
-use rstd::ops;
+use io;
+use rstd::{ops, vec};
 use hex::{ToHex, FromHex, FromHexError};
 //use heapsize::HeapSizeOf;
 
@@ -80,7 +81,6 @@ impl str::FromStr for Bytes {
 	}
 }*/
 
-/*
 impl io::Write for Bytes {
 	fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
 		self.0.write(buf)
@@ -89,7 +89,7 @@ impl io::Write for Bytes {
 	fn flush(&mut self) -> Result<(), io::Error> {
 		self.0.flush()
 	}
-}*/
+}
 
 /*
 impl fmt::Debug for Bytes {
@@ -106,13 +106,13 @@ impl ops::Deref for Bytes {
 	}
 }
 
-/*
 impl ops::DerefMut for Bytes {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.0
 	}
 }
 
+/*
 impl AsRef<[u8]> for Bytes {
 	fn as_ref(&self) -> &[u8] {
 		&self.0

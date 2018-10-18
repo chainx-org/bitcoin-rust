@@ -1,8 +1,13 @@
 [package]
 name = "serialization"
 version = "0.1.0"
-authors = ["debris <marek.kotewicz@gmail.com>"]
+authors = ["debris <marek.kotewicz@gmail.com> & chainpool <http://chainx.org>"]
 
 [dependencies]
-byteorder = "1.0"
-primitives = { path = "../primitives" }
+byteorder = { version = "1", default-features = false }
+primitives = { path = "../primitives", default-features = false }
+sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
+
+[features]
+default = ["std"]
+std = [ "byteorder/std", "primitives/std", "sr-std/std"]

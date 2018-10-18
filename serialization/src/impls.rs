@@ -1,15 +1,20 @@
-use std::io;
-use byteorder::{ReadBytesExt, WriteBytesExt, LittleEndian};
+// Copyright 2018 Chainpool
+
+use primitives::io;
+use primitives::io::{Read, Write};
+use byteorder::LittleEndian;
 use bytes::Bytes;
 use compact::Compact;
 use hash::{H32, H48, H96, H160, H256, H264, H512, H520};
 use compact_integer::CompactInteger;
-use {Serializable, Stream, Deserializable, Reader, Error};
+use {Serializable, Stream, Deserializable, Reader};
+use primitives::io::Error;
+use rstd::result::Result;
 
 impl Serializable for bool {
 	#[inline]
 	fn serialize(&self, s: &mut Stream) {
-		s.write_u8(*self as u8).unwrap();
+		s.write_u8(*self as u8);
 	}
 
 	#[inline]
@@ -21,7 +26,7 @@ impl Serializable for bool {
 impl Serializable for i32 {
 	#[inline]
 	fn serialize(&self, s: &mut Stream) {
-		s.write_i32::<LittleEndian>(*self).unwrap();
+		s.write_i32::<LittleEndian>(*self);
 	}
 
 	#[inline]
@@ -33,7 +38,7 @@ impl Serializable for i32 {
 impl Serializable for i64 {
 	#[inline]
 	fn serialize(&self, s: &mut Stream) {
-		s.write_i64::<LittleEndian>(*self).unwrap();
+		s.write_i64::<LittleEndian>(*self);
 	}
 
 	#[inline]
@@ -45,7 +50,7 @@ impl Serializable for i64 {
 impl Serializable for u8 {
 	#[inline]
 	fn serialize(&self, s: &mut Stream) {
-		s.write_u8(*self).unwrap();
+		s.write_u8(*self);
 	}
 
 	#[inline]
@@ -57,7 +62,7 @@ impl Serializable for u8 {
 impl Serializable for u16 {
 	#[inline]
 	fn serialize(&self, s: &mut Stream) {
-		s.write_u16::<LittleEndian>(*self).unwrap();
+		s.write_u16::<LittleEndian>(*self);
 	}
 
 	#[inline]
@@ -69,7 +74,7 @@ impl Serializable for u16 {
 impl Serializable for u32 {
 	#[inline]
 	fn serialize(&self, s: &mut Stream) {
-		s.write_u32::<LittleEndian>(*self).unwrap();
+		s.write_u32::<LittleEndian>(*self);
 	}
 
 	#[inline]
@@ -81,7 +86,7 @@ impl Serializable for u32 {
 impl Serializable for u64 {
 	#[inline]
 	fn serialize(&self, s: &mut Stream) {
-		s.write_u64::<LittleEndian>(*self).unwrap();
+		s.write_u64::<LittleEndian>(*self);
 	}
 
 	#[inline]
@@ -97,7 +102,7 @@ impl Deserializable for bool {
 		match value {
 			0 => Ok(false),
 			1 => Ok(true),
-			_ => Err(Error::MalformedData),
+			_ => Err(io::ErrorKind::MalformedData),
 		}
 	}
 }

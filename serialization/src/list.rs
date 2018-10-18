@@ -1,5 +1,8 @@
-use std::io;
-use {Serializable, Deserializable, Error, Reader, Stream};
+// Copyright 2018 Chainpool
+
+use primitives::io;
+use primitives::io::Error;
+use {Serializable, Deserializable, Reader, Stream};
 
 #[derive(Debug, Clone)]
 pub struct List<T>(Vec<T>);

@@ -1,8 +1,11 @@
+// Copyright 2018 Chainpool
+
 //! Stream used for serialization of Bitcoin structures
-use std::io::{self, Write};
-use std::borrow::Borrow;
+use primitives::io::{self, Write};
+use primitives::borrow::Borrow;
 use compact_integer::CompactInteger;
 use bytes::Bytes;
+use rstd::prelude::*;
 
 /// Do not serialize transaction witness data.
 pub const SERIALIZE_TRANSACTION_WITNESS: u32 = 0x40000000;
@@ -84,7 +87,7 @@ impl Stream {
 	/// Appends raw bytes to the end of the stream.
 	pub fn append_slice(&mut self, bytes: &[u8]) -> &mut Self {
 		// discard error for now, since we write to simple vector
-		self.buffer.write(bytes).unwrap();
+		self.buffer.write(bytes);
 		self
 	}
 
