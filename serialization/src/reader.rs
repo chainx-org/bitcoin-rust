@@ -2,6 +2,7 @@
 
 use primitives::{io, marker};
 use compact_integer::CompactInteger;
+use rstd::prelude::Vec;
 
 pub fn deserialize<R, T>(buffer: R) -> Result<T, io::Error> where R: io::Read, T: Deserializable {
 	let mut reader = Reader::from_read(buffer);

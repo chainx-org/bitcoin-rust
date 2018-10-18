@@ -149,6 +149,7 @@ impl Deserializable for u64 {
 	}
 }
 
+/*
 impl Serializable for String {
 	fn serialize(&self, stream: &mut Stream) {
 		let bytes: &[u8] = self.as_ref();
@@ -162,7 +163,7 @@ impl Serializable for String {
 		let bytes: &[u8] = self.as_ref();
 		CompactInteger::from(bytes.len()).serialized_size() + bytes.len()
 	}
-}
+}*/
 
 impl<'a> Serializable for &'a str {
 	fn serialize(&self, stream: &mut Stream) {
@@ -179,12 +180,13 @@ impl<'a> Serializable for &'a str {
 	}
 }
 
+/*
 impl Deserializable for String {
 	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, Error> where T: io::Read {
 		let bytes: Bytes = try!(reader.read());
 		Ok(String::from_utf8_lossy(&bytes).into_owned())
 	}
-}
+}*/
 
 macro_rules! impl_ser_for_hash {
 	($name: ident, $size: expr) => {
@@ -323,6 +325,7 @@ mod tests {
 		assert_eq!(expected, serialize(&bytes));
 	}
 
+/*
 	#[test]
 	fn test_string_serialize() {
 		let expected: Bytes = "0776657273696f6e".into();
@@ -342,7 +345,7 @@ mod tests {
 		let expected: String = "".into();
 		assert_eq!(expected, deserialize::<_, String>(raw.as_ref()).unwrap());
 	}
-
+*/
 	#[test]
 	fn test_steam_append_slice() {
 		let mut slice = [0u8; 4];

@@ -1,6 +1,7 @@
 // Copyright 2018 Chainpool
 
 use primitives::io;
+use rstd::prelude::Vec;
 use primitives::io::Error;
 use {Serializable, Deserializable, Reader, Stream};
 

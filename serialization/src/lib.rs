@@ -1,5 +1,7 @@
 // Copyright 2018 Chainpool
 
+#![cfg_attr(not(feature = "std"), no_std)]
+
 extern crate byteorder;
 extern crate primitives;
 #[allow(unused_imports)]

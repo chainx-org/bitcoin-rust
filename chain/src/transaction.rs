@@ -1,7 +1,7 @@
 //! Bitcoin trainsaction.
 //! https://en.bitcoin.it/wiki/Protocol_documentation#tx
 
-use std::io;
+use io;
 use heapsize::HeapSizeOf;
 use hex::FromHex;
 use bytes::Bytes;
