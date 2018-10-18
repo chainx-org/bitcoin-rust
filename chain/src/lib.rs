@@ -1,3 +1,5 @@
+// Copyright 2018 Chainpool
+
 extern crate rustc_hex as hex;
 extern crate heapsize;
 extern crate primitives;

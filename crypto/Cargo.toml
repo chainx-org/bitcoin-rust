@@ -4,6 +4,6 @@ version = "0.1.0"
 authors = ["debris <marek.kotewicz@gmail.com>"]
 
 [dependencies]
-rust-crypto = "0.2.36"
 siphasher = "0.1.1"
-primitives = { path = "../primitives" }
+primitives = { path = "../primitives", default-features = false }
+sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }

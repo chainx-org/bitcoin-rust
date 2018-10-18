@@ -1,12 +1,23 @@
-extern crate crypto as rcrypto;
+// Copyright 2018 Chainpool
+
 extern crate primitives;
 extern crate siphasher;
+#[allow(unused_imports)]
+#[macro_use]
+extern crate sr_std as rstd;
 
-pub use rcrypto::digest::Digest;
-use std::hash::Hasher;
-use rcrypto::sha1::Sha1;
-use rcrypto::sha2::Sha256;
-use rcrypto::ripemd160::Ripemd160;
+pub mod digest;
+pub mod sha1;
+pub mod sha2;
+pub mod ripemd160;
+mod fixed_buffer;
+mod simd;
+
+pub use digest::Digest;
+use rstd::hash::Hasher;
+use sha1::Sha1;
+use sha2::Sha256;
+use ripemd160::Ripemd160;
 use siphasher::sip::SipHasher24;
 use primitives::hash::{H32, H160, H256};
 

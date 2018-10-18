@@ -1,3 +1,5 @@
+// Copyright 2018 Chainpool
+
 use std::{io, cmp, fmt};
 use hash::H256;
 use ser::{Deserializable, Reader, Error as ReaderError};

@@ -1,8 +1,9 @@
 // Copyright 2018 Chainpool
 
-use rstd::{ptr, mem, cmp, result::Result};
+use rstd::{ptr, mem, cmp};
 use rstd::prelude::*;
 use byteorder::ByteOrder;
+pub use rstd::result::Result;
 
 pub enum ErrorKind {
      Interrupted,
