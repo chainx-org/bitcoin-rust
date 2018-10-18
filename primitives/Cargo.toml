@@ -4,15 +4,20 @@ version = "0.1.0"
 authors = ["debris <marek.kotewicz@gmail.com> chainpool & <http://chainx.org>"]
 
 [dependencies]
-heapsize = "0.4"
-rustc-hex = { version = "2.0", default-features = false }
-byteorder = { version = "1.1", default-features = false }
 substrate-primitives = { git = "https://github.com/paritytech/substrate", default-features = false }
+sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
+fixed-hash = { version = "0.2", default_features = false }
+rustc-hex = { version = "2.0", default-features = false }
+byteorder = { version = "1", default-features = false }
+void = { version = "1", default-features = false }
 
 [features]
-default = ["std"]
+default = []
 std = [
-    "rustc-hex/std",
-    "byteorder/std",
     "substrate-primitives/std",
+    "rustc-hex/std",
+    "sr-std/std",
+    "fixed-hash/std",
+    "byteorder/std",
+    "void/std",
 ]

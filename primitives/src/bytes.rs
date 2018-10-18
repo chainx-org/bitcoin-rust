@@ -1,11 +1,17 @@
-//! Wrapper around `Vec<u8>`
+// Copyright 2018 Chainpool
 
-use std::{ops, str, fmt, io, marker};
+/*
+#[cfg(feature = "std")]
+use std::{fmt, io, marker};
+*/
+
+use rstd::prelude::*;
+use rstd::ops;
 use hex::{ToHex, FromHex, FromHexError};
-use heapsize::HeapSizeOf;
+//use heapsize::HeapSizeOf;
 
 /// Wrapper around `Vec<u8>`
-#[derive(Default, PartialEq, Clone, Eq, Hash)]
+#[derive(Default, PartialEq, Clone, Eq)]
 pub struct Bytes(Vec<u8>);
 
 impl Bytes {
@@ -34,11 +40,12 @@ impl Bytes {
 	}
 }
 
+/*
 impl HeapSizeOf for Bytes {
 	fn heap_size_of_children(&self) -> usize {
 		self.0.heap_size_of_children()
 	}
-}
+}*/
 
 impl<'a> From<&'a [u8]> for Bytes {
 	fn from(v: &[u8]) -> Self {
@@ -58,6 +65,7 @@ impl From<Bytes> for Vec<u8> {
 	}
 }
 
+/*
 impl From<&'static str> for Bytes {
 	fn from(s: &'static str) -> Self {
 		s.parse().unwrap()
@@ -70,8 +78,9 @@ impl str::FromStr for Bytes {
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		s.from_hex().map(Bytes)
 	}
-}
+}*/
 
+/*
 impl io::Write for Bytes {
 	fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
 		self.0.write(buf)
@@ -80,13 +89,14 @@ impl io::Write for Bytes {
 	fn flush(&mut self) -> Result<(), io::Error> {
 		self.0.flush()
 	}
-}
+}*/
 
+/*
 impl fmt::Debug for Bytes {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		f.write_str(&self.0.to_hex::<String>())
 	}
-}
+}*/
 
 impl ops::Deref for Bytes {
 	type Target = Vec<u8>;
@@ -96,6 +106,7 @@ impl ops::Deref for Bytes {
 	}
 }
 
+/*
 impl ops::DerefMut for Bytes {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.0
@@ -112,8 +123,9 @@ impl AsMut<[u8]> for Bytes {
 	fn as_mut(&mut self) -> &mut [u8] {
 		&mut self.0
 	}
-}
+}*/
 
+/*
 /// Wrapper around `Vec<u8>` which represent associated type
 #[derive(Default, PartialEq, Clone)]
 pub struct TaggedBytes<T> {
@@ -134,6 +146,7 @@ impl<T> TaggedBytes<T> {
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> ops::Deref for TaggedBytes<T> {
 	type Target = Vec<u8>;
 
@@ -142,23 +155,27 @@ impl<T> ops::Deref for TaggedBytes<T> {
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> ops::DerefMut for TaggedBytes<T> {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.bytes.0
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> AsRef<[u8]> for TaggedBytes<T> {
 	fn as_ref(&self) -> &[u8] {
 		&self.bytes.0
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> AsMut<[u8]> for TaggedBytes<T> {
 	fn as_mut(&mut self) -> &mut [u8] {
 		&mut self.bytes.0
 	}
 }
+*/
 
 #[cfg(test)]
 mod tests {
