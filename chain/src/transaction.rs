@@ -21,7 +21,8 @@ const WITNESS_MARKER: u8 = 0;
 /// Must be nonzero.
 const WITNESS_FLAG: u8 = 1;
 
-#[derive(Debug, PartialEq, Eq, Clone, Default)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Default)]
 pub struct OutPoint {
 	pub hash: H256,
 	pub index: u32,

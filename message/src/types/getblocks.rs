@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use hash::H256;
 use ser::{Stream, Reader};
 use {Payload, MessageResult};

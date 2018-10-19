@@ -1,4 +1,6 @@
-use std::io;
+
+use primitives::io;
+use primitives::io::{Read, Write};
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use ser::{Serializable, Stream, Deserializable, Reader, Error as ReaderError};
 
@@ -24,7 +26,7 @@ impl Serializable for Port {
 }
 
 impl Deserializable for Port {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		Ok(try!(reader.read_u16::<BigEndian>().map(Port)))
 	}
 }

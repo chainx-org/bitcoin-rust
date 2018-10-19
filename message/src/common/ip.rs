@@ -1,5 +1,7 @@
-use std::{str, net, io};
-use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
+use std::{str, net};
+use primitives::io;
+use primitives::io::{Read, Write};
+use byteorder::{BigEndian, WriteBytesExt};
 use ser::{Serializable, Stream, Deserializable, Reader, Error as ReaderError};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -55,7 +57,7 @@ impl Serializable for IpAddress {
 }
 
 impl Deserializable for IpAddress {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		let bytes: &mut [u8] = &mut [0u8; 12];
 		try!(reader.read_slice(bytes));
 		if bytes == &[0u8; 12] {

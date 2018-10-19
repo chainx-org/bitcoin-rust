@@ -1,5 +1,8 @@
+
+use primitives::io;
 use ser::Reader;
-use {Payload, Error};
+use Payload;
+use Error;
 
 pub fn deserialize_payload<T>(buffer: &[u8], version: u32) -> Result<T, Error> where T: Payload {
 	let mut reader = PayloadReader::new(buffer, version);

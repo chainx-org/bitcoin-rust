@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use bytes::Bytes;
 use ser::{Stream, Reader};
 use {Payload, MessageResult};

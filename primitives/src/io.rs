@@ -13,6 +13,8 @@ pub enum ErrorKind {
      MalformedData,
      UnexpectedEnd,
      UnreadData,
+     Deserialize,
+     InvalidVersion,
 }
 
 pub type Error = ErrorKind;

@@ -1,17 +1,11 @@
 // Copyright 2018 Chainpool
-
-/*
-#[cfg(feature = "std")]
-use std::{fmt, io, marker};
-*/
-
 use rstd::prelude::*;
 use io;
-use rstd::{ops, vec};
+use rstd::{ops, vec, marker};
 #[cfg(feature = "std")]
 use hex::{ToHex, FromHexError, FromHex};
 #[cfg(feature = "std")]
-use fixed_hash::heapsize::HeapSizeOf;
+use heapsize::HeapSizeOf;
 
 /// Wrapper around `Vec<u8>`
 #[derive(Default, PartialEq, Clone, Eq)]
@@ -116,7 +110,6 @@ impl ops::DerefMut for Bytes {
 	}
 }
 
-/*
 impl AsRef<[u8]> for Bytes {
 	fn as_ref(&self) -> &[u8] {
 		&self.0
@@ -127,16 +120,16 @@ impl AsMut<[u8]> for Bytes {
 	fn as_mut(&mut self) -> &mut [u8] {
 		&mut self.0
 	}
-}*/
+}
 
-/*
-/// Wrapper around `Vec<u8>` which represent associated type
+#[cfg(feature = "std")]
 #[derive(Default, PartialEq, Clone)]
 pub struct TaggedBytes<T> {
 	bytes: Bytes,
 	label: marker::PhantomData<T>,
 }
 
+#[cfg(feature = "std")]
 impl<T> TaggedBytes<T> {
 	pub fn new(bytes: Bytes) -> Self {
 		TaggedBytes {
@@ -179,7 +172,6 @@ impl<T> AsMut<[u8]> for TaggedBytes<T> {
 		&mut self.bytes.0
 	}
 }
-*/
 
 #[cfg(test)]
 mod tests {

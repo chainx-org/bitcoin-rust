@@ -152,7 +152,6 @@ dependencies = [
  "db 0.1.0",
  "env_logger 0.5.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "exit-future 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "import 0.1.0",
  "jsonrpc-http-server 9.0.0 (git+https://github.com/ethcore/jsonrpc.git)",
  "keys 0.1.0",
  "libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -555,16 +554,6 @@ dependencies = [
  "tokio-tcp 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio-timer 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "want 0.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "import"
-version = "0.1.0"
-dependencies = [
- "chain 0.1.0",
- "log 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "primitives 0.1.0",
- "serialization 0.1.0",
 ]
 
 [[package]]
@@ -1060,7 +1049,7 @@ name = "primitives"
 version = "0.1.0"
 dependencies = [
  "byteorder 1.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "fixed-hash 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-std 0.1.0 (git+https://github.com/paritytech/substrate)",
  "substrate-primitives 0.1.0 (git+https://github.com/paritytech/substrate)",

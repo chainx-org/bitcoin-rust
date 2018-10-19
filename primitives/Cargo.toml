@@ -6,7 +6,7 @@ authors = ["debris <marek.kotewicz@gmail.com> chainpool & <http://chainx.org>"]
 [dependencies]
 substrate-primitives = { git = "https://github.com/paritytech/substrate", default-features = false }
 sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
-fixed-hash = { version = "0.2", default_features = false }
+heapsize = { version = "0.4", optional = true }
 rustc-hex = { version = "2.0", default-features = false }
 byteorder = { version = "1", default-features = false }
 void = { version = "1", default-features = false }
@@ -17,7 +17,7 @@ std = [
     "substrate-primitives/std",
     "rustc-hex/std",
     "sr-std/std",
-    "fixed-hash/std",
+    "heapsize",
     "byteorder/std",
     "void/std",
 ]
