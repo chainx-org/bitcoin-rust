@@ -9,8 +9,7 @@ use rstd::prelude::*;
 use io;
 use rstd::{ops, vec};
 #[cfg(feature = "std")]
-use hex::ToHex;
-//use hex::{ToHex, FromHex, FromHexError};
+use hex::{ToHex, FromHexError, FromHex};
 #[cfg(feature = "std")]
 use fixed_hash::heapsize::HeapSizeOf;
 
@@ -69,20 +68,22 @@ impl From<Bytes> for Vec<u8> {
 	}
 }
 
-/*
+#[cfg(feature = "std")]
 impl From<&'static str> for Bytes {
 	fn from(s: &'static str) -> Self {
 		s.parse().unwrap()
 	}
 }
 
-impl str::FromStr for Bytes {
+
+#[cfg(feature = "std")]
+impl std::str::FromStr for Bytes {
 	type Err = FromHexError;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		s.from_hex().map(Bytes)
 	}
-}*/
+}
 
 impl io::Write for Bytes {
 	fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {

@@ -63,7 +63,7 @@ impl Block {
 		let hashes = match self.transactions.split_first() {
 			None => vec![],
 			Some((_, rest)) => {
-				let mut hashes = vec![H256::from(0)];
+				let mut hashes = vec![H256::from(0 as u8)];
 				hashes.extend(rest.iter().map(Transaction::witness_hash));
 				hashes
 			},

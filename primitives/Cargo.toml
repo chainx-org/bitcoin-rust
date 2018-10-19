@@ -12,7 +12,7 @@ byteorder = { version = "1", default-features = false }
 void = { version = "1", default-features = false }
 
 [features]
-default = []
+default = ["std"]
 std = [
     "substrate-primitives/std",
     "rustc-hex/std",

@@ -10,3 +10,11 @@ construct_hash!(H256, 32);
 construct_hash!(H264, 33);
 construct_hash!(H512, 64);
 construct_hash!(H520, 65);
+
+impl From<u8> for H256 {
+	fn from(v: u8) -> Self {
+		let mut result = Self::default();
+		result.0[0] = v;
+		result
+	}
+}
