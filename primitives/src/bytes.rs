@@ -1,11 +1,14 @@
-//! Wrapper around `Vec<u8>`
-
-use std::{ops, str, fmt, io, marker};
-use hex::{ToHex, FromHex, FromHexError};
+// Copyright 2018 Chainpool
+use rstd::prelude::*;
+use io;
+use rstd::{ops, vec, marker};
+#[cfg(feature = "std")]
+use hex::{ToHex, FromHexError, FromHex};
+#[cfg(feature = "std")]
 use heapsize::HeapSizeOf;
 
 /// Wrapper around `Vec<u8>`
-#[derive(Default, PartialEq, Clone, Eq, Hash)]
+#[derive(Default, PartialEq, Clone, Eq)]
 pub struct Bytes(Vec<u8>);
 
 impl Bytes {
@@ -34,6 +37,7 @@ impl Bytes {
 	}
 }
 
+#[cfg(feature = "std")]
 impl HeapSizeOf for Bytes {
 	fn heap_size_of_children(&self) -> usize {
 		self.0.heap_size_of_children()
@@ -58,13 +62,16 @@ impl From<Bytes> for Vec<u8> {
 	}
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for Bytes {
 	fn from(s: &'static str) -> Self {
 		s.parse().unwrap()
 	}
 }
 
-impl str::FromStr for Bytes {
+
+#[cfg(feature = "std")]
+impl std::str::FromStr for Bytes {
 	type Err = FromHexError;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -82,8 +89,9 @@ impl io::Write for Bytes {
 	}
 }
 
-impl fmt::Debug for Bytes {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+#[cfg(feature = "std")]
+impl std::fmt::Debug for Bytes {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		f.write_str(&self.0.to_hex::<String>())
 	}
 }
@@ -114,13 +122,14 @@ impl AsMut<[u8]> for Bytes {
 	}
 }
 
-/// Wrapper around `Vec<u8>` which represent associated type
+#[cfg(feature = "std")]
 #[derive(Default, PartialEq, Clone)]
 pub struct TaggedBytes<T> {
 	bytes: Bytes,
 	label: marker::PhantomData<T>,
 }
 
+#[cfg(feature = "std")]
 impl<T> TaggedBytes<T> {
 	pub fn new(bytes: Bytes) -> Self {
 		TaggedBytes {
@@ -134,6 +143,7 @@ impl<T> TaggedBytes<T> {
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> ops::Deref for TaggedBytes<T> {
 	type Target = Vec<u8>;
 
@@ -142,18 +152,21 @@ impl<T> ops::Deref for TaggedBytes<T> {
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> ops::DerefMut for TaggedBytes<T> {
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.bytes.0
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> AsRef<[u8]> for TaggedBytes<T> {
 	fn as_ref(&self) -> &[u8] {
 		&self.bytes.0
 	}
 }
 
+#[cfg(feature = "std")]
 impl<T> AsMut<[u8]> for TaggedBytes<T> {
 	fn as_mut(&mut self) -> &mut [u8] {
 		&mut self.bytes.0

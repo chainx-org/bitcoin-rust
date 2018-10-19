@@ -4,7 +4,7 @@
 use compact::Compact;
 use chain::Block;
 use primitives::hash::H256;
-use primitives::bigint::U256;
+use primitives::U256;
 use {ConsensusFork};
 
 const MAGIC_MAINNET: u32 = 0xD9B4BEF9;

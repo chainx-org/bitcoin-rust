@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use chain::BlockHeader;
 use ser::{Stream, Reader, Serializable, Deserializable, CompactInteger, Error as ReaderError};
 use {Payload, MessageResult};
@@ -83,7 +83,7 @@ impl Deserializable for HeaderWithTxnCount {
 
 		let txn_count: CompactInteger = try!(reader.read());
 		if txn_count != 0u32.into() {
-			return Err(ReaderError::MalformedData);
+			return Err(io::ErrorKind::MalformedData);
 		}
 
 		Ok(header)

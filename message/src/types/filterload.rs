@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use bytes::Bytes;
 use ser::{Serializable, Deserializable, Stream, Reader, Error as ReaderError};
 use {Payload, MessageResult};
@@ -82,8 +82,8 @@ impl Serializable for FilterFlags {
 }
 
 impl Deserializable for FilterFlags {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		let t: u8 = try!(reader.read());
-		FilterFlags::from_u8(t).ok_or(ReaderError::MalformedData)
+		FilterFlags::from_u8(t).ok_or(io::ErrorKind::MalformedData)
 	}
 }

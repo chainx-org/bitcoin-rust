@@ -1,4 +1,7 @@
-use std::{io, cmp, fmt};
+// Copyright 2018 Chainpool
+
+use rstd::cmp;
+use primitives::io;
 use hash::H256;
 use ser::{Deserializable, Reader, Error as ReaderError};
 use block_header::BlockHeader;
@@ -10,10 +13,11 @@ pub struct IndexedBlockHeader {
 	pub raw: BlockHeader,
 }
 
-impl fmt::Debug for IndexedBlockHeader {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+#[cfg(feature = "std")]
+impl std::fmt::Debug for IndexedBlockHeader {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		f.debug_struct("IndexedBlockHeader")
-			.field("hash", &self.hash.reversed())
+			.field("hash", &self.hash.clone().reverse())
 			.field("raw", &self.raw)
 			.finish()
 	}

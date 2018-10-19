@@ -1,6 +1,6 @@
 //! Transaction index
 
-use std::io;
+use primitives::io;
 use bit_vec::BitVec;
 use bytes::Bytes;
 use ser::{Serializable, Deserializable, Error as ReaderError, Stream, Reader};
@@ -23,7 +23,7 @@ impl Serializable for TransactionMeta {
 }
 
 impl Deserializable for TransactionMeta {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		let result = TransactionMeta {
 			block_height: reader.read()?,
 			bits: BitVec::from_bytes(&reader.read::<Bytes>()?),

@@ -1,4 +1,6 @@
-use std::io;
+// Copyright 2018 Chainpool
+
+use io;
 use hash::H256;
 use crypto::{DHash256, Digest};
 use ser::{Reader, Error as ReaderError, Deserializable};

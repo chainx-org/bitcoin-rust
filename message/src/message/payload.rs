@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use ser::{Reader, Stream};
 use MessageResult;
 

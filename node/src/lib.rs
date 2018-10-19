@@ -12,7 +12,7 @@ extern crate log;
 
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-use primitives::bigint::{U256, Uint};
+use primitives::U256;
 use primitives::bytes::Bytes;
 use primitives::hash::H256;
 use chain::{merkle_root, IndexedTransaction, Transaction, IndexedBlockHeader, TransactionInput,

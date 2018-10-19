@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use hash::H32;
 use ser::{Deserializable, Reader, Error as ReaderError};
 use chain::IndexedBlock;
@@ -11,7 +11,7 @@ pub struct Block {
 }
 
 impl Deserializable for Block {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		let block = Block {
 			magic: try!(reader.read()),
 			block_size: try!(reader.read()),

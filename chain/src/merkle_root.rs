@@ -1,5 +1,8 @@
+// Copyright 2018 Chainpool
+
 use crypto::dhash256;
 use hash::{H256, H512};
+use rstd::prelude::Vec;
 
 #[inline]
 fn concat<T>(a: T, b: T) -> H512 where T: AsRef<H256> {

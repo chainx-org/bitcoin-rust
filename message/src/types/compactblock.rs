@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use ser::{Stream, Reader};
 use common::BlockHeaderAndIDs;
 use {Payload, MessageResult};

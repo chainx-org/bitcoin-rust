@@ -1,17 +1,34 @@
-use std::cmp;
+// Copyright 2018 Chainpool
+
+use rstd::cmp;
 use hash::H256;
+#[cfg(feature = "std")]
 use hex::FromHex;
-use ser::{Serializable, serialized_list_size, serialized_list_size_with_flags, deserialize, SERIALIZE_TRANSACTION_WITNESS};
+#[cfg(feature = "std")]
+use ser::deserialize;
+use ser::{Reader, Deserializable, Serializable, serialized_list_size, serialized_list_size_with_flags, SERIALIZE_TRANSACTION_WITNESS};
 use block::Block;
 use transaction::Transaction;
 use merkle_root::merkle_root;
 use indexed_header::IndexedBlockHeader;
 use indexed_transaction::IndexedTransaction;
+use rstd::prelude::Vec;
+use primitives::io;
 
-#[derive(Debug, Clone, Deserializable)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone)]
 pub struct IndexedBlock {
 	pub header: IndexedBlockHeader,
 	pub transactions: Vec<IndexedTransaction>,
+}
+
+impl Deserializable for IndexedBlock {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where Self: Sized, T: io::Read {
+		Ok(IndexedBlock {
+			header: reader.read()?,
+			transactions: reader.read_list()?,
+		})
+	}
 }
 
 impl From<Block> for IndexedBlock {
@@ -69,7 +86,7 @@ impl IndexedBlock {
 		let hashes = match self.transactions.split_first() {
 			None => vec![],
 			Some((_, rest)) => {
-				let mut hashes = vec![H256::from(0)];
+				let mut hashes = vec![H256::from(0 as u8)];
 				hashes.extend(rest.iter().map(|tx| tx.raw.witness_hash()));
 				hashes
 			},
@@ -82,6 +99,7 @@ impl IndexedBlock {
 	}
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for IndexedBlock {
 	fn from(s: &'static str) -> Self {
 		deserialize(&s.from_hex::<Vec<u8>>().unwrap() as &[u8]).unwrap()

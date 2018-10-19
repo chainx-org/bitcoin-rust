@@ -1,10 +1,18 @@
+// Copyright 2018 Chainpool
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(feature = "std")]
 extern crate rustc_hex as hex;
+#[cfg(feature = "std")]
 extern crate heapsize;
 extern crate primitives;
 extern crate bitcrypto as crypto;
 extern crate serialization as ser;
+
+#[allow(unused_imports)]
 #[macro_use]
-extern crate serialization_derive;
+extern crate sr_std as rstd;
 
 pub mod constants;
 
@@ -23,7 +31,7 @@ pub trait RepresentH256 {
 	fn h256(&self) -> hash::H256;
 }
 
-pub use primitives::{hash, bytes, bigint, compact};
+pub use primitives::{hash, bytes, compact, io};
 
 pub use block::Block;
 pub use block_header::BlockHeader;

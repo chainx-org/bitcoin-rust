@@ -1,12 +1,26 @@
-extern crate crypto as rcrypto;
-extern crate primitives;
-extern crate siphasher;
+// Copyright 2018 Chainpool
 
-pub use rcrypto::digest::Digest;
-use std::hash::Hasher;
-use rcrypto::sha1::Sha1;
-use rcrypto::sha2::Sha256;
-use rcrypto::ripemd160::Ripemd160;
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate primitives;
+#[cfg(feature = "std")]
+extern crate siphasher;
+#[allow(unused_imports)]
+#[macro_use]
+extern crate sr_std as rstd;
+
+pub mod digest;
+pub mod sha1;
+pub mod sha2;
+pub mod ripemd160;
+pub mod fixed_buffer;
+mod simd;
+
+pub use digest::Digest;
+use sha1::Sha1;
+use sha2::Sha256;
+use ripemd160::Ripemd160;
+#[cfg(feature = "std")]
 use siphasher::sip::SipHasher24;
 use primitives::hash::{H32, H160, H256};
 
@@ -156,8 +170,10 @@ pub fn dhash256(input: &[u8]) -> H256 {
 }
 
 /// SipHash-2-4
+#[cfg(feature = "std")]
 #[inline]
 pub fn siphash24(key0: u64, key1: u64, input: &[u8]) -> u64 {
+    use std::hash::Hasher;
 	let mut hasher = SipHasher24::new_with_keys(key0, key1);
 	hasher.write(input);
 	hasher.finish()

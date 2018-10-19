@@ -1,26 +1,50 @@
 //! Bitcoin trainsaction.
 //! https://en.bitcoin.it/wiki/Protocol_documentation#tx
 
-use std::io;
+use io;
+#[cfg(feature = "std")]
 use heapsize::HeapSizeOf;
+#[cfg(feature = "std")]
 use hex::FromHex;
+#[cfg(feature = "std")]
+use ser::deserialize;
 use bytes::Bytes;
-use ser::{deserialize, serialize, serialize_with_flags, SERIALIZE_TRANSACTION_WITNESS};
+use ser::{serialize, serialize_with_flags, SERIALIZE_TRANSACTION_WITNESS};
 use crypto::dhash256;
 use hash::H256;
 use constants::{SEQUENCE_FINAL, LOCKTIME_THRESHOLD};
 use ser::{Error, Serializable, Deserializable, Stream, Reader};
+use rstd::prelude::Vec;
 
 /// Must be zero.
 const WITNESS_MARKER: u8 = 0;
 /// Must be nonzero.
 const WITNESS_FLAG: u8 = 1;
 
-#[derive(Debug, PartialEq, Eq, Clone, Default, Serializable, Deserializable)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, Clone, Default)]
 pub struct OutPoint {
 	pub hash: H256,
 	pub index: u32,
 }
+
+impl Serializable for OutPoint {
+	fn serialize(&self, stream: &mut Stream) {
+		stream
+			.append(&self.hash)
+			.append(&self.index);
+	}
+}
+
+impl Deserializable for OutPoint {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, Error> where Self: Sized, T: io::Read {
+		Ok(OutPoint {
+			hash: reader.read()?,
+			index: reader.read()?,
+		})
+	}
+}
+
 
 impl OutPoint {
 	pub fn null() -> Self {
@@ -35,7 +59,8 @@ impl OutPoint {
 	}
 }
 
-#[derive(Debug, PartialEq, Default, Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Default, Clone)]
 pub struct TransactionInput {
 	pub previous_output: OutPoint,
 	pub script_sig: Bytes,
@@ -62,6 +87,7 @@ impl TransactionInput {
 	}
 }
 
+#[cfg(feature = "std")]
 impl HeapSizeOf for TransactionInput {
 	fn heap_size_of_children(&self) -> usize {
 		self.script_sig.heap_size_of_children() +
@@ -69,10 +95,28 @@ impl HeapSizeOf for TransactionInput {
 	}
 }
 
-#[derive(Debug, PartialEq, Clone, Serializable, Deserializable)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Clone)]
 pub struct TransactionOutput {
 	pub value: u64,
 	pub script_pubkey: Bytes,
+}
+
+impl Serializable for TransactionOutput {
+	fn serialize(&self, stream: &mut Stream) {
+		stream
+			.append(&self.value)
+			.append(&self.script_pubkey);
+	}
+}
+
+impl Deserializable for TransactionOutput {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, Error> where Self: Sized, T: io::Read {
+		Ok(TransactionOutput {
+			value: reader.read()?,
+			script_pubkey: reader.read()?,
+		})
+	}
 }
 
 impl Default for TransactionOutput {
@@ -84,13 +128,15 @@ impl Default for TransactionOutput {
 	}
 }
 
+#[cfg(feature = "std")]
 impl HeapSizeOf for TransactionOutput {
 	fn heap_size_of_children(&self) -> usize {
 		self.script_pubkey.heap_size_of_children()
 	}
 }
 
-#[derive(Debug, PartialEq, Default, Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Default, Clone)]
 pub struct Transaction {
 	pub version: i32,
 	pub inputs: Vec<TransactionInput>,
@@ -98,12 +144,14 @@ pub struct Transaction {
 	pub lock_time: u32,
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for Transaction {
 	fn from(s: &'static str) -> Self {
 		deserialize(&s.from_hex::<Vec<u8>>().unwrap() as &[u8]).unwrap()
 	}
 }
 
+#[cfg(feature = "std")]
 impl HeapSizeOf for Transaction {
 	fn heap_size_of_children(&self) -> usize {
 		self.inputs.heap_size_of_children() + self.outputs.heap_size_of_children()
@@ -235,7 +283,7 @@ impl Deserializable for Transaction {
 		let read_witness = if inputs.is_empty() {
 			let witness_flag: u8 = reader.read()?;
 			if witness_flag != WITNESS_FLAG {
-				return Err(Error::MalformedData);
+				return Err(io::ErrorKind::MalformedData);
 			}
 
 			inputs = reader.read_list()?;

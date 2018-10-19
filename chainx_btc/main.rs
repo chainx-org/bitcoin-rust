@@ -21,7 +21,7 @@ extern crate network;
 extern crate p2p;
 extern crate miner;
 extern crate sync;
-extern crate import;
+//extern crate import;
 extern crate parking_lot;
 extern crate rpc as core_rpc;
 extern crate primitives;
@@ -74,7 +74,7 @@ fn run() -> Result<(), String> {
     }
 
     match matches.subcommand() {
-        ("import", Some(import_matches)) => commands::import(cfg, import_matches),
+        //("import", Some(import_matches)) => commands::import(cfg, import_matches),
         ("rollback", Some(rollback_matches)) => commands::rollback(cfg, rollback_matches),
         ("dev", _) => commands::dev(cfg),
         _ => commands::start(cfg),

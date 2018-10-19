@@ -1,4 +1,7 @@
-use std::{cmp, io, fmt};
+// Copyright 2018 Chainpool
+
+use rstd::cmp;
+use primitives::io;
 use hash::H256;
 use ser::{Deserializable, Reader, Error as ReaderError};
 use transaction::Transaction;
@@ -10,10 +13,11 @@ pub struct IndexedTransaction {
 	pub raw: Transaction,
 }
 
-impl fmt::Debug for IndexedTransaction {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+#[cfg(feature = "std")]
+impl std::fmt::Debug for IndexedTransaction {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		f.debug_struct("IndexedTransaction")
-			.field("hash", &self.hash.reversed())
+			.field("hash", &self.hash.clone().reverse())
 			.field("raw", &self.raw)
 			.finish()
 	}

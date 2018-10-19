@@ -1,8 +1,11 @@
 //! Fixed-size hashes
 
-use std::{fmt, ops, cmp, str};
+use rstd::{ops, cmp};
+#[cfg(feature = "std")]
 use hex::{ToHex, FromHex, FromHexError};
-use std::hash::{Hash, Hasher};
+use rstd::hash::{Hash, Hasher};
+#[cfg(feature = "std")]
+use std::{str, fmt};
 
 macro_rules! impl_hash {
 	($name: ident, $size: expr) => {
@@ -49,6 +52,7 @@ macro_rules! impl_hash {
 			}
 		}
 
+        #[cfg(feature = "std")]
 		impl From<&'static str> for $name {
 			fn from(s: &'static str) -> Self {
 				s.parse().unwrap()
@@ -63,6 +67,7 @@ macro_rules! impl_hash {
 			}
 		}
 
+        #[cfg(feature = "std")]
 		impl str::FromStr for $name {
 			type Err = FromHexError;
 
@@ -79,12 +84,14 @@ macro_rules! impl_hash {
 			}
 		}
 
+        #[cfg(feature = "std")]
 		impl fmt::Debug for $name {
 			fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 				f.write_str(&self.0.to_hex::<String>())
 			}
 		}
 
+        #[cfg(feature = "std")]
 		impl fmt::Display for $name {
 			fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 				f.write_str(&self.0.to_hex::<String>())
@@ -162,8 +169,10 @@ impl_hash!(H264, 33);
 impl_hash!(H512, 64);
 impl_hash!(H520, 65);
 
+#[cfg(feature = "std")]
 known_heap_size!(0, H32, H48, H96, H160, H256, H264, H512, H520);
 
+#[cfg(feature = "std")]
 impl H256 {
 	#[inline]
 	pub fn from_reversed_str(s: &'static str) -> Self {

@@ -1,4 +1,4 @@
-use std::io;
+use primitives::io;
 use hash::H256;
 use ser::{Serializable, Stream, Deserializable, Reader, Error as ReaderError};
 
@@ -44,9 +44,9 @@ impl Serializable for InventoryType {
 }
 
 impl Deserializable for InventoryType {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		let t: u32 = try!(reader.read());
-		InventoryType::from_u32(t).ok_or(ReaderError::MalformedData)
+		InventoryType::from_u32(t).ok_or(io::ErrorKind::MalformedData)
 	}
 }
 
@@ -81,7 +81,7 @@ impl Serializable for InventoryVector {
 }
 
 impl Deserializable for InventoryVector {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		let vec = InventoryVector {
 			inv_type: try!(reader.read()),
 			hash: try!(reader.read()),

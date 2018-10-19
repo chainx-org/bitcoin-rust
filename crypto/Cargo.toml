@@ -1,9 +1,14 @@
 [package]
 name = "bitcrypto"
 version = "0.1.0"
-authors = ["debris <marek.kotewicz@gmail.com>"]
+authors = ["debris <marek.kotewicz@gmail.com> & chainpool <http://chainx.org>"]
 
 [dependencies]
-rust-crypto = "0.2.36"
-siphasher = "0.1.1"
-primitives = { path = "../primitives" }
+siphasher = { version = "0.1.1", optional = true }
+primitives = { path = "../primitives", default-features = false }
+sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
+
+[features]
+default = ["std"]
+
+std = [ "siphasher", "primitives/std", "sr-std/std", ]

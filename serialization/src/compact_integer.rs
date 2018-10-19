@@ -1,20 +1,21 @@
 //! Variable-length integer commonly used in the Bitcoin [P2P protocol](https://bitcoin.org/en/developer-reference#compactsize-unsigned-integers)
 
-use std::{fmt, io};
+//use std::{fmt, io};
+use primitives::io;
 use {
 	Serializable, Stream,
-	Deserializable, Reader, Error as ReaderError
+	Deserializable, Reader
 };
 
 /// A type of variable-length integer commonly used in the Bitcoin P2P protocol and Bitcoin serialized data structures.
 #[derive(Default, Debug, Clone, Copy, PartialEq)]
 pub struct CompactInteger(u64);
-
+/*
 impl fmt::Display for CompactInteger {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		self.0.fmt(f)
 	}
-}
+}*/
 
 impl From<CompactInteger> for usize {
 	fn from(i: CompactInteger) -> Self {
@@ -93,7 +94,7 @@ impl Serializable for CompactInteger {
 }
 
 impl Deserializable for CompactInteger {
-	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, ReaderError> where T: io::Read {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
 		let result = match try!(reader.read::<u8>()) {
 			i @ 0...0xfc => i.into(),
 			0xfd => try!(reader.read::<u16>()).into(),
@@ -107,8 +108,8 @@ impl Deserializable for CompactInteger {
 
 #[cfg(test)]
 mod tests {
-	use {Reader, Error as ReaderError, Stream};
-	use super::CompactInteger;
+	use {Reader, Stream};
+	use super::{CompactInteger, io};
 
 	#[test]
 	fn test_compact_integer_stream() {
@@ -156,6 +157,6 @@ mod tests {
 		assert_eq!(reader.read::<CompactInteger>().unwrap(), 0x10000u64.into());
 		assert_eq!(reader.read::<CompactInteger>().unwrap(), 0xffff_ffffu64.into());
 		assert_eq!(reader.read::<CompactInteger>().unwrap(), 0x1_0000_0000u64.into());
-		assert_eq!(reader.read::<CompactInteger>().unwrap_err(), ReaderError::UnexpectedEnd);
+		assert_eq!(reader.read::<CompactInteger>().unwrap_err(), io::Error::UnexpectedEnd);
 	}
 }
