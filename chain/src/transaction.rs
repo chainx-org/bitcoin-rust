@@ -6,10 +6,8 @@ use io;
 use heapsize::HeapSizeOf;
 #[cfg(feature = "std")]
 use hex::FromHex;
-#[cfg(feature = "std")]
-use ser::deserialize;
 use bytes::Bytes;
-use ser::{serialize, serialize_with_flags, SERIALIZE_TRANSACTION_WITNESS};
+use ser::{deserialize, serialize, serialize_with_flags, SERIALIZE_TRANSACTION_WITNESS};
 use crypto::dhash256;
 use hash::H256;
 use constants::{SEQUENCE_FINAL, LOCKTIME_THRESHOLD};
@@ -60,7 +58,7 @@ impl OutPoint {
 }
 
 #[cfg_attr(feature = "std", derive(Debug))]
-#[derive(PartialEq, Default, Clone)]
+#[derive(PartialEq, Default, Clone, Eq)]
 pub struct TransactionInput {
 	pub previous_output: OutPoint,
 	pub script_sig: Bytes,
@@ -96,7 +94,7 @@ impl HeapSizeOf for TransactionInput {
 }
 
 #[cfg_attr(feature = "std", derive(Debug))]
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Eq)]
 pub struct TransactionOutput {
 	pub value: u64,
 	pub script_pubkey: Bytes,
@@ -136,7 +134,7 @@ impl HeapSizeOf for TransactionOutput {
 }
 
 #[cfg_attr(feature = "std", derive(Debug))]
-#[derive(PartialEq, Default, Clone)]
+#[derive(PartialEq, Default, Clone, Eq)]
 pub struct Transaction {
 	pub version: i32,
 	pub inputs: Vec<TransactionInput>,
@@ -304,6 +302,24 @@ impl Deserializable for Transaction {
 			outputs: outputs,
 			lock_time: reader.read()?,
 		})
+	}
+}
+
+impl ::codec::Encode for Transaction {
+    fn encode(&self) -> Vec<u8> {
+        let value = serialize::<Transaction>(&self);
+        value.take()
+    }
+}
+
+impl ::codec::Decode for Transaction {
+	fn decode<I: ::codec::Input>(input: &mut I) -> Option<Self> {
+		let value = <Vec<u8> as ::codec::Decode>::decode(input).unwrap();
+        if let Ok(tx) = deserialize(Reader::new(&value)) {
+            Some(tx) 
+        } else {
+            None
+        }
 	}
 }
 
