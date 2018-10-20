@@ -45,5 +45,3 @@ pub use indexed_header::IndexedBlockHeader;
 pub use indexed_transaction::IndexedTransaction;
 
 pub type ShortTransactionID = hash::H48;
-
-
