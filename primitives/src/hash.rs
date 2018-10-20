@@ -184,3 +184,14 @@ impl H256 {
 		self.reversed().to_string()
 	}
 }
+
+impl ::codec::Encode for H256 {
+	fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
+		self.0.using_encoded(f)
+	}
+}
+impl ::codec::Decode for H256 {
+	fn decode<I: ::codec::Input>(input: &mut I) -> Option<Self> {
+		<[u8; 32] as ::codec::Decode>::decode(input).map(H256)
+	}
+}
