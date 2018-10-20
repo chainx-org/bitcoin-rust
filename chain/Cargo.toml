@@ -10,6 +10,7 @@ bitcrypto = { path = "../crypto", default-features = false }
 primitives = { path = "../primitives", default-features = false }
 serialization = { path = "../serialization", default-features = false }
 sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
+parity-codec = { git = "https://github.com/paritytech/parity-codec", default-features = false }
 
 [features]
 default = ["std"]
@@ -20,4 +21,5 @@ std = [
     "primitives/std",
     "serialization/std",
     "sr-std/std",
+    "parity-codec/std",
 ]

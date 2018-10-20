@@ -2,16 +2,15 @@
 
 #[cfg(feature = "std")]
 use hex::FromHex;
-#[cfg(feature = "std")]
-use ser::deserialize;
-use ser::{serialize, Serializable, Stream, Reader, Deserializable};
+use ser::{serialize, deserialize, Serializable, Stream, Reader, Deserializable};
 use crypto::dhash256;
 use compact::Compact;
 use hash::H256;
 use primitives::io;
 use rstd::result::Result;
+use rstd::prelude::Vec;
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Eq, Default)]
 pub struct BlockHeader {
 	pub version: u32,
 	pub previous_header_hash: H256,
@@ -19,6 +18,24 @@ pub struct BlockHeader {
 	pub time: u32,
 	pub bits: Compact,
 	pub nonce: u32,
+}
+
+impl ::codec::Encode for BlockHeader {
+    fn encode(&self) -> Vec<u8> {
+        let value = serialize::<BlockHeader>(&self);
+        value.take()
+    }
+}
+
+impl ::codec::Decode for BlockHeader {
+	fn decode<I: ::codec::Input>(input: &mut I) -> Option<Self> {
+		let value = <Vec<u8> as ::codec::Decode>::decode(input).unwrap();
+        if let Ok(header) = deserialize(Reader::new(&value)) {
+            Some(header) 
+        } else {
+            None
+        }
+	}
 }
 
 impl Serializable for BlockHeader {

@@ -9,6 +9,7 @@ extern crate heapsize;
 extern crate primitives;
 extern crate bitcrypto as crypto;
 extern crate serialization as ser;
+extern crate parity_codec as codec;
 
 #[allow(unused_imports)]
 #[macro_use]
@@ -44,3 +45,5 @@ pub use indexed_header::IndexedBlockHeader;
 pub use indexed_transaction::IndexedTransaction;
 
 pub type ShortTransactionID = hash::H48;
+
+
