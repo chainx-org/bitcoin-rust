@@ -10,6 +10,7 @@ heapsize = { version = "0.4", optional = true }
 rustc-hex = { version = "2.0", default-features = false }
 byteorder = { version = "1", default-features = false }
 void = { version = "1", default-features = false }
+parity-codec = { git = "https://github.com/paritytech/parity-codec", default-features = false }
 
 [features]
 default = ["std"]
@@ -19,5 +20,6 @@ std = [
     "sr-std/std",
     "heapsize",
     "byteorder/std",
+    "parity-codec/std",
     "void/std",
 ]

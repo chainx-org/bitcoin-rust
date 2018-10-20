@@ -10,6 +10,7 @@ extern crate core;
 extern crate byteorder;
 extern crate void;
 extern crate rustc_hex as hex;
+extern crate parity_codec as codec;
 extern crate substrate_primitives;
 #[cfg(feature="std")]
 #[macro_use]
