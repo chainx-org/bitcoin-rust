@@ -3,7 +3,7 @@
 use substrate_primitives::U256;
 
 /// Compact representation of `U256`
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Default)]
 pub struct Compact(u32);
 
 impl From<u32> for Compact {
