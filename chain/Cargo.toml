@@ -9,7 +9,7 @@ heapsize = { version = "0.4", optional = true }
 bitcrypto = { path = "../crypto", default-features = false }
 primitives = { path = "../primitives", default-features = false }
 serialization = { path = "../serialization", default-features = false }
-sr-std = { git = "https://github.com/paritytech/substrate", default-features = false }
+sr-std = { git = "https://github.com/paritytech/substrate", rev="a2ae6562d47ca7547a951fb3b22612a63c884ac1", default-features = false }
 parity-codec = { git = "https://github.com/paritytech/parity-codec", default-features = false }
 
 [features]
