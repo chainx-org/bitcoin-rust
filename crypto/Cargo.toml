@@ -6,7 +6,7 @@ authors = ["debris <marek.kotewicz@gmail.com> & chainpool <http://chainx.org>"]
 [dependencies]
 siphasher = { version = "0.1.1", optional = true }
 primitives = { path = "../primitives", default-features = false }
-sr-std = { git = "https://github.com/paritytech/substrate", rev="a2ae6562d47ca7547a951fb3b22612a63c884ac1", default-features = false }
+sr-std = { git = "https://github.com/chainx-org/sr-std", default-features = false }
 
 [features]
 default = ["std"]
