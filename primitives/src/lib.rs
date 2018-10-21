@@ -11,14 +11,18 @@ extern crate byteorder;
 extern crate void;
 extern crate rustc_hex as hex;
 extern crate parity_codec as codec;
-extern crate substrate_primitives;
 #[cfg(feature="std")]
 #[macro_use]
 extern crate heapsize;
+#[macro_use]
+extern crate crunchy;
+#[macro_use]
+extern crate uint as uint_crate;
 
 pub mod bytes;
 pub mod compact;
 pub mod hash;
 pub mod io;
-pub use substrate_primitives::U256;
+mod u256;
+pub use u256::U256;
 pub use rstd::{borrow, marker};
