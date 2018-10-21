@@ -1,6 +1,6 @@
 //! Compact representation of `U256`
 
-use substrate_primitives::U256;
+use U256;
 
 /// Compact representation of `U256`
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Default)]

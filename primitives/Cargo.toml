@@ -4,18 +4,19 @@ version = "0.1.0"
 authors = ["debris <marek.kotewicz@gmail.com> chainpool & <http://chainx.org>"]
 
 [dependencies]
-substrate-primitives = { git = "https://github.com/paritytech/substrate", rev="a2ae6562d47ca7547a951fb3b22612a63c884ac1", default-features = false }
+crunchy = "0.1"
 sr-std = { git = "https://github.com/chainx-org/sr-std", default-features = false }
 heapsize = { version = "0.4", optional = true }
 rustc-hex = { version = "2.0", default-features = false }
 byteorder = { version = "1", default-features = false }
 void = { version = "1", default-features = false }
 parity-codec = { version = "2.0", default-features = false }
+uint = { version = "0.4.1", default-features = false }
 
 [features]
 default = ["std"]
 std = [
-    "substrate-primitives/std",
+    "uint/std",
     "rustc-hex/std",
     "sr-std/std",
     "heapsize",
