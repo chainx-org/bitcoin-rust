@@ -20,6 +20,7 @@ pub struct BlockHeader {
 	pub nonce: u32,
 }
 
+#[cfg(feature = "std")]
 impl serde::Serialize for BlockHeader {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -31,6 +32,7 @@ impl serde::Serialize for BlockHeader {
     }
 }
 
+#[cfg(feature = "std")]
 impl<'de> serde::Deserialize<'de> for BlockHeader {
     #[inline]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
