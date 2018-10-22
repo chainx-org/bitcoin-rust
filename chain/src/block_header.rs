@@ -20,6 +20,32 @@ pub struct BlockHeader {
 	pub nonce: u32,
 }
 
+impl serde::Serialize for BlockHeader {
+    #[inline]
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let value = serialize::<BlockHeader>(&self).take();
+        serde_bytes::serialize(&value, serializer) 
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for BlockHeader {
+    #[inline]
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value: Vec<u8> = serde_bytes::deserialize(deserializer).unwrap();
+        if let Ok(header) = deserialize(Reader::new(&value)) {
+            Ok(header)
+        } else {
+            Err(serde::de::Error::custom("header is not expect"))
+        }
+    }
+}
+
 impl ::codec::Encode for BlockHeader {
     fn encode(&self) -> Vec<u8> {
         let value = serialize::<BlockHeader>(&self);

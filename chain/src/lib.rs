@@ -10,6 +10,8 @@ extern crate primitives;
 extern crate bitcrypto as crypto;
 extern crate serialization as ser;
 extern crate parity_codec as codec;
+extern crate serde_bytes;
+extern crate serde;
 
 #[allow(unused_imports)]
 #[macro_use]

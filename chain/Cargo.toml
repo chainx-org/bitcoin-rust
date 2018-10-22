@@ -11,15 +11,19 @@ primitives = { path = "../primitives", default-features = false }
 serialization = { path = "../serialization", default-features = false }
 sr-std = { git = "https://github.com/chainx-org/sr-std", default-features = false }
 parity-codec = { version = "2.0", default-features = false }
+serde_bytes = { git = "https://github.com/serde-rs/bytes", default-features = true }
+serde = { version = "1.0", default-features = false }
 
 [features]
 default = ["std"]
 std = [
     "rustc-hex",
     "heapsize",
+    "serde_bytes/std",
     "bitcrypto/std",
     "primitives/std",
     "serialization/std",
     "sr-std/std",
+    "serde/std",
     "parity-codec/std",
 ]
