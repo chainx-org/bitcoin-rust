@@ -10,6 +10,7 @@ extern crate primitives;
 extern crate bitcrypto as crypto;
 extern crate serialization as ser;
 extern crate parity_codec as codec;
+#[cfg(feature = "std")]
 extern crate serde_bytes;
 #[cfg(feature = "std")]
 extern crate serde;
