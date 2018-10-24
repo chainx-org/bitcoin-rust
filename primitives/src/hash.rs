@@ -138,6 +138,17 @@ macro_rules! impl_hash {
 
 		impl Eq for $name { }
 
+		impl Ord for $name {
+            fn cmp(&self, other: &$name) -> cmp::Ordering {
+				// little-endian ordering
+				for i in 0..$size {
+				    if self[$size - 1 - i] < other[$size - 1 - i] { return cmp::Ordering::Less; }
+				    if self[$size - 1 - i] > other[$size - 1 - i] { return cmp::Ordering::Greater; }
+				}
+				cmp::Ordering::Equal
+            }
+        }
+
 		impl $name {
 			pub fn take(self) -> [u8; $size] {
 				self.0
@@ -174,30 +185,31 @@ known_heap_size!(0, H32, H48, H96, H160, H256, H264, H512, H520);
 
 #[cfg(feature = "std")]
 impl H256 {
-	#[inline]
-	pub fn from_reversed_str(s: &'static str) -> Self {
-		H256::from(s).reversed()
-	}
+    #[inline]
+    pub fn from_reversed_str(s: &'static str) -> Self {
+        H256::from(s).reversed()
+    }
 
-	#[inline]
-	pub fn to_reversed_str(&self) -> String {
-		self.reversed().to_string()
-	}
+    #[inline]
+    pub fn to_reversed_str(&self) -> String {
+        self.reversed().to_string()
+    }
 }
 
 impl ::codec::Encode for H256 {
-	fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
-		self.0.using_encoded(f)
-	}
+    fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
+        self.0.using_encoded(f)
+    }
 }
+
 impl ::codec::Decode for H256 {
-	fn decode<I: ::codec::Input>(input: &mut I) -> Option<Self> {
-		<[u8; 32] as ::codec::Decode>::decode(input).map(H256)
-	}
+    fn decode<I: ::codec::Input>(input: &mut I) -> Option<Self> {
+        <[u8; 32] as ::codec::Decode>::decode(input).map(H256)
+    }
 }
 
 impl cmp::Ord for H256 {
-     fn cmp(&self, other: &H256) -> cmp::Ordering {
-          self.0.cmp(&other.0)
-     }
+    fn cmp(&self, other: &H256) -> cmp::Ordering {
+        self.0.cmp(&other.0)
+    }
 }
