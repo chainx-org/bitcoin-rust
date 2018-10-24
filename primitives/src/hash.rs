@@ -195,3 +195,9 @@ impl ::codec::Decode for H256 {
 		<[u8; 32] as ::codec::Decode>::decode(input).map(H256)
 	}
 }
+
+impl cmp::Ord for H256 {
+     fn cmp(&self, other: &H256) -> cmp::Ordering {
+          self.0.cmp(&other.0)
+     }
+}

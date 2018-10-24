@@ -50,7 +50,6 @@ name = "chainx_btc"
 [workspace]
 members = [
   "bencher",
-  "key",
   "db",
   "miner",
   "chain",

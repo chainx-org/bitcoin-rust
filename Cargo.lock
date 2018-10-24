@@ -589,13 +589,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "key"
-version = "0.1.0"
-dependencies = [
- "keys 0.1.0",
-]
-
-[[package]]
 name = "keys"
 version = "0.1.0"
 dependencies = [
