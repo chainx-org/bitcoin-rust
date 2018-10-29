@@ -196,6 +196,18 @@ impl ::codec::Decode for H256 {
 	}
 }
 
+impl ::codec::Encode for H160 {
+	fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
+		self.0.using_encoded(f)
+	}
+}
+impl ::codec::Decode for H160 {
+	fn decode<I: ::codec::Input>(input: &mut I) -> Option<Self> {
+		<[u8; 20] as ::codec::Decode>::decode(input).map(H160)
+	}
+}
+
+
 impl cmp::Ord for H256 {
      fn cmp(&self, other: &H256) -> cmp::Ordering {
           self.0.cmp(&other.0)
