@@ -1,15 +1,16 @@
 //! Bitcoin keys.
 
-#[macro_use]
-extern crate log;
+#![cfg_attr(not(feature = "std"), no_std)]
+#[cfg(feature = "std")]
 extern crate rand;
+#[cfg(feature = "std")]
 extern crate rustc_hex as hex;
-#[macro_use]
-extern crate lazy_static;
+#[cfg(feature = "std")]
 extern crate base58;
 extern crate secp256k1;
 extern crate bitcrypto as crypto;
 extern crate primitives;
+extern crate sr_std as rstd;
 
 pub mod generator;
 mod address;
@@ -40,8 +41,4 @@ pub type AddressHash = H160;
 pub type Secret = H256;
 /// 32 bytes long signable message
 pub type Message = H256;
-
-lazy_static! {
-	pub static ref SECP256K1: secp256k1::Secp256k1 = secp256k1::Secp256k1::new();
-}
 

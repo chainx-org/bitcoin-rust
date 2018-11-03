@@ -2,20 +2,26 @@
 //!
 //! http://bitcoin.stackexchange.com/q/12554/40688
 
-use std::{fmt, ops, str};
+#[cfg(feature = "std")]
+use std::{fmt, str};
+use rstd::ops;
+#[cfg(feature = "std")]
 use hex::{ToHex, FromHex};
 use hash::H520;
 use Error;
+use rstd::prelude::Vec;
 
 #[derive(PartialEq)]
 pub struct Signature(Vec<u8>);
 
+#[cfg(feature = "std")]
 impl fmt::Debug for Signature {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		self.0.to_hex::<String>().fmt(f)
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Signature {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		self.0.to_hex::<String>().fmt(f)
@@ -30,6 +36,7 @@ impl ops::Deref for Signature {
 	}
 }
 
+#[cfg(feature = "std")]
 impl str::FromStr for Signature {
 	type Err = Error;
 
@@ -39,6 +46,7 @@ impl str::FromStr for Signature {
 	}
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for Signature {
 	fn from(s: &'static str) -> Self {
 		s.parse().unwrap()
@@ -72,12 +80,14 @@ impl<'a> From<&'a [u8]> for Signature {
 #[derive(PartialEq)]
 pub struct CompactSignature(H520);
 
+#[cfg(feature = "std")]
 impl fmt::Debug for CompactSignature {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		f.write_str(&self.0.to_hex::<String>())
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for CompactSignature {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		f.write_str(&self.0.to_hex::<String>())
@@ -92,6 +102,7 @@ impl ops::Deref for CompactSignature {
 	}
 }
 
+#[cfg(feature = "std")]
 impl str::FromStr for CompactSignature {
 	type Err = Error;
 
@@ -103,6 +114,7 @@ impl str::FromStr for CompactSignature {
 	}
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for CompactSignature {
 	fn from(s: &'static str) -> Self {
 		s.parse().unwrap()

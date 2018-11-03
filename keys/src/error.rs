@@ -1,7 +1,10 @@
+
+#[cfg(feature = "std")]
 use std::fmt;
 use secp256k1::Error as SecpError;
 
-#[derive(Debug, PartialEq)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq)]
 pub enum Error {
 	InvalidPublic,
 	InvalidSecret,
@@ -14,6 +17,7 @@ pub enum Error {
 	FailedKeyGeneration,
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Error {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let msg = match *self {

@@ -1,16 +1,18 @@
 //! Bitcoin key pair.
 
+#[cfg(feature = "std")]
 use std::fmt;
 use secp256k1::key;
 use hash::{H264, H520};
 use network::Network;
-use {Public, Error, SECP256K1, Address, Type, Private, Secret};
+use {Public, Error, Address, Type, Private, Secret};
 
 pub struct KeyPair {
 	private: Private,
 	public: Public,
 }
 
+#[cfg(feature = "std")]
 impl fmt::Debug for KeyPair {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		try!(self.private.fmt(f));
@@ -18,6 +20,7 @@ impl fmt::Debug for KeyPair {
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for KeyPair {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		try!(writeln!(f, "private: {}", self.private));
@@ -35,7 +38,7 @@ impl KeyPair {
 	}
 
 	pub fn from_private(private: Private) -> Result<KeyPair, Error> {
-		let context = &SECP256K1;
+		let context = &secp256k1::Secp256k1::new();
 		let s: key::SecretKey = try!(key::SecretKey::from_slice(context, &*private.secret));
 		let pub_key = try!(key::PublicKey::from_secret_key(context, &s));
 		let serialized = pub_key.serialize_vec(context, private.compressed);
@@ -59,7 +62,7 @@ impl KeyPair {
 	}
 
 	pub fn from_keypair(sec: key::SecretKey, public: key::PublicKey, network: Network) -> Self {
-		let context = &SECP256K1;
+		let context = &secp256k1::Secp256k1::new();
 		let serialized = public.serialize_vec(context, false);
 		let mut secret = Secret::default();
 		secret.copy_from_slice(&sec[0..32]);
@@ -94,6 +97,7 @@ impl KeyPair {
 
 }
 
+#[cfg(feature = "std")]
 #[cfg(test)]
 mod tests {
 	use crypto::dhash256;

@@ -4,11 +4,22 @@ version = "0.1.0"
 authors = ["debris <marek.kotewicz@gmail.com>"]
 
 [dependencies]
-log = "0.4"
-rand = "0.4"
-rustc-hex = "2"
-lazy_static = "1.0"
-base58 = "0.1"
-eth-secp256k1 = { git = "https://github.com/ethcore/rust-secp256k1" }
-bitcrypto = { path = "../crypto" }
-primitives = { path = "../primitives" }
+sr-std = { git = "https://github.com/chainx-org/sr-std", default-features = false }
+rand = { version = "0.4", optional = true }
+rustc-hex = { version = "2", optional = true }
+base58 = { version = "0.1", optional = true }
+eth-secp256k1 = { git = "https://github.com/chainx-org/rust-secp256k1", default-features = false }
+bitcrypto = { path = "../crypto", default-features = false }
+primitives = { path = "../primitives", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+    "sr-std/std",
+    "rand",
+    "rustc-hex",
+    "base58",
+    "eth-secp256k1/std",
+    "bitcrypto/std",
+    "primitives/std",
+]

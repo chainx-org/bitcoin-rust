@@ -1,10 +1,14 @@
-use std::{fmt, ops};
+
+#[cfg(feature = "std")]
+use std::fmt;
+use rstd::ops;
 use secp256k1::key;
 use secp256k1::{Message as SecpMessage, RecoveryId, RecoverableSignature, Error as SecpError, Signature as SecpSignature};
+#[cfg(feature = "std")]
 use hex::ToHex;
 use crypto::dhash160;
 use hash::{H264, H520};
-use {AddressHash, Error, CompactSignature, Signature, Message, SECP256K1};
+use {AddressHash, Error, CompactSignature, Signature, Message};
 
 /// Secret public key
 pub enum Public {
@@ -37,7 +41,7 @@ impl Public {
 	}
 
 	pub fn verify(&self, message: &Message, signature: &Signature) -> Result<bool, Error> {
-		let context = &SECP256K1;
+		let context = &secp256k1::Secp256k1::new();
 		let public = try!(key::PublicKey::from_slice(context, self));
 		let mut signature = try!(SecpSignature::from_der_lax(context, signature));
 		signature.normalize_s(context);
@@ -50,7 +54,7 @@ impl Public {
 	}
 
 	pub fn recover_compact(message: &Message, signature: &CompactSignature) -> Result<Self, Error> {
-		let context = &SECP256K1;
+		let context = &secp256k1::Secp256k1::new();
 		let recovery_id = (signature[0] - 27) & 3;
 		let compressed = (signature[0] - 27) & 4 != 0;
 		let recovery_id = try!(RecoveryId::from_i32(recovery_id as i32));
@@ -90,6 +94,7 @@ impl PartialEq for Public {
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Debug for Public {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match *self {
@@ -99,6 +104,7 @@ impl fmt::Debug for Public {
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Public {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		self.to_hex::<String>().fmt(f)

@@ -1,7 +1,10 @@
+
+#[cfg(feature = "std")]
 use rand::os::OsRng;
 use network::Network;
-use {KeyPair, SECP256K1, Error};
+use {KeyPair, Error};
 
+#[cfg(feature = "std")]
 pub trait Generator {
 	fn generate(&self) -> Result<KeyPair, Error>;
 }
@@ -18,9 +21,10 @@ impl Random {
 	}
 }
 
+#[cfg(feature = "std")]
 impl Generator for Random {
 	fn generate(&self) -> Result<KeyPair, Error> {
-		let context = &SECP256K1;
+		let context = &secp256k1::Secp256k1::new();
 		let mut rng = try!(OsRng::new().map_err(|_| Error::FailedKeyGeneration));
 		let (secret, public) = try!(context.generate_keypair(&mut rng));
 		Ok(KeyPair::from_keypair(secret, public, self.network))

@@ -5,17 +5,23 @@
 //!
 //! https://en.bitcoin.it/wiki/Address
 
+#[cfg(feature = "std")]
 use std::fmt;
+#[cfg(feature = "std")]
 use std::str::FromStr;
-use std::ops::Deref;
+use rstd::ops::Deref;
+#[cfg(feature = "std")]
 use base58::{ToBase58, FromBase58};
 use crypto::checksum;
 use network::Network;
-use {DisplayLayout, Error, AddressHash};
+use {Error, AddressHash};
+#[cfg(feature = "std")]
+use DisplayLayout;
 
 /// There are two address formats currently in use.
 /// https://bitcoin.org/en/developer-reference#address-conversion
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Clone, Copy)]
 pub enum Type {
 	/// Pay to PubKey Hash
 	/// Common P2PKH which begin with the number 1, eg: 1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2.
@@ -28,7 +34,8 @@ pub enum Type {
 }
 
 /// `AddressHash` with network identifier and format type
-#[derive(Debug, PartialEq, Clone)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Clone)]
 pub struct Address {
 	/// The type of the address.
 	pub kind: Type,
@@ -38,8 +45,10 @@ pub struct Address {
 	pub hash: AddressHash,
 }
 
+#[cfg(feature = "std")]
 pub struct AddressDisplayLayout([u8; 25]);
 
+#[cfg(feature = "std")]
 impl Deref for AddressDisplayLayout {
 	type Target = [u8];
 
@@ -48,6 +57,7 @@ impl Deref for AddressDisplayLayout {
 	}
 }
 
+#[cfg(feature = "std")]
 impl DisplayLayout for Address {
 	type Target = AddressDisplayLayout;
 
@@ -98,12 +108,14 @@ impl DisplayLayout for Address {
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Address {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		self.layout().to_base58().fmt(f)
 	}
 }
 
+#[cfg(feature = "std")]
 impl FromStr for Address {
 	type Err = Error;
 
@@ -113,12 +125,14 @@ impl FromStr for Address {
 	}
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for Address {
 	fn from(s: &'static str) -> Self {
 		s.parse().unwrap()
 	}
 }
 
+#[cfg(feature = "std")]
 #[cfg(test)]
 mod tests {
 	use network::Network;

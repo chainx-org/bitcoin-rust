@@ -1,15 +1,20 @@
 //! Secret with additional network identifier and format type
 
+#[cfg(feature = "std")]
 use std::fmt;
+#[cfg(feature = "std")]
 use std::str::FromStr;
 use secp256k1::key;
 use secp256k1::Message as SecpMessage;
+#[cfg(feature = "std")]
 use hex::ToHex;
+#[cfg(feature = "std")]
 use base58::{ToBase58, FromBase58};
 use crypto::checksum;
 use hash::H520;
 use network::Network;
-use {Secret, DisplayLayout, Error, Message, Signature, CompactSignature, SECP256K1};
+use {Secret, DisplayLayout, Error, Message, Signature, CompactSignature};
+use rstd::prelude::Vec;
 
 /// Secret with additional network identifier and format type
 #[derive(PartialEq)]
@@ -24,7 +29,7 @@ pub struct Private {
 
 impl Private {
 	pub fn sign(&self, message: &Message) -> Result<Signature, Error> {
-		let context = &SECP256K1;
+		let context = &secp256k1::Secp256k1::new();
 		let secret = try!(key::SecretKey::from_slice(context, &*self.secret));
 		let message = try!(SecpMessage::from_slice(&**message));
 		let signature = try!(context.sign(&message, &secret));
@@ -33,7 +38,7 @@ impl Private {
 	}
 
 	pub fn sign_compact(&self, message: &Message) -> Result<CompactSignature, Error> {
-		let context = &SECP256K1;
+		let context = &secp256k1::Secp256k1::new();
 		let secret = try!(key::SecretKey::from_slice(context, &*self.secret));
 		let message = try!(SecpMessage::from_slice(&**message));
 		let signature = try!(context.sign_recoverable(&message, &secret));
@@ -54,7 +59,7 @@ impl DisplayLayout for Private {
 	type Target = Vec<u8>;
 
 	fn layout(&self) -> Self::Target {
-		let mut result = vec![];
+		let mut result = Vec::new();
 		let network_byte = match self.network {
 			Network::Mainnet => 128,
 			Network::Testnet => 239,
@@ -105,6 +110,7 @@ impl DisplayLayout for Private {
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Debug for Private {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		try!(writeln!(f, "network: {:?}", self.network));
@@ -113,12 +119,14 @@ impl fmt::Debug for Private {
 	}
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Private {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		self.layout().to_base58().fmt(f)
 	}
 }
 
+#[cfg(feature = "std")]
 impl FromStr for Private {
 	type Err = Error;
 
@@ -128,6 +136,7 @@ impl FromStr for Private {
 	}
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for Private {
 	fn from(s: &'static str) -> Self {
 		s.parse().unwrap()
