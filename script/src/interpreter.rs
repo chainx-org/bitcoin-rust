@@ -1,10 +1,11 @@
-use std::{cmp, mem};
+use rstd::{cmp, mem};
 use bytes::Bytes;
 use keys::{Signature, Public};
 use chain::constants::SEQUENCE_LOCKTIME_DISABLE_FLAG;
 use crypto::{sha1, sha256, dhash160, dhash256, ripemd160};
 use sign::{SignatureVersion, Sighash};
 use script::MAX_SCRIPT_ELEMENT_SIZE;
+use rstd::prelude::Vec;
 use {
 	script, Builder, Script, ScriptWitness, Num, VerificationFlags, Opcode, Error, SignatureChecker, Stack
 };
@@ -856,10 +857,13 @@ pub fn eval_script(
 			Opcode::OP_EQUAL => {
 				let v1 = stack.pop()?;
 				let v2 = stack.pop()?;
+                let mut vec = Vec::new();
 				if v1 == v2 {
-					stack.push(vec![1].into());
+                    vec.push(1);
+					stack.push(vec.into());
 				} else {
-					stack.push(vec![0].into());
+                    vec.push(0);
+					stack.push(vec.into());
 				}
 			},
 			Opcode::OP_EQUALVERIFY => {
@@ -975,10 +979,13 @@ pub fn eval_script(
 				let v1 = Num::from_slice(&stack.pop()?, flags.verify_minimaldata, 4)?;
 				let v2 = Num::from_slice(&stack.pop()?, flags.verify_minimaldata, 4)?;
 				let v3 = Num::from_slice(&stack.pop()?, flags.verify_minimaldata, 4)?;
+                let mut vec = Vec::new();
 				if v2 <= v3 && v3 < v1 {
-					stack.push(vec![1].into());
+                    vec.push(1);
+					stack.push(vec.into());
 				} else {
-					stack.push(vec![0].into());
+                    vec.push(0);
+					stack.push(vec.into());
 				}
 			},
 			Opcode::OP_RIPEMD160 => {
@@ -1025,10 +1032,13 @@ pub fn eval_script(
 				let success = check_signature(checker, signature.into(), pubkey.into(), &subscript, version);
 				match opcode {
 					Opcode::OP_CHECKSIG => {
+                        let mut vec = Vec::new();
 						if success {
-							stack.push(vec![1].into());
+                            vec.push(1);
+							stack.push(vec.into());
 						} else {
-							stack.push(vec![0].into());
+                            vec.push(0);
+							stack.push(vec.into());
 						}
 					},
 					Opcode::OP_CHECKSIGVERIFY if !success => {
@@ -1094,10 +1104,13 @@ pub fn eval_script(
 
 				match opcode {
 					Opcode::OP_CHECKMULTISIG => {
+                        let mut vec = Vec::new();
 						if success {
-							stack.push(vec![1].into());
+                            vec.push(1);
+							stack.push(vec.into());
 						} else {
-							stack.push(vec![0].into());
+                            vec.push(0);
+							stack.push(vec.into());
 						}
 					},
 					Opcode::OP_CHECKMULTISIGVERIFY if !success => {

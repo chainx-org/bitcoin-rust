@@ -65,7 +65,7 @@ impl Builder {
 	pub fn push_bytes(mut self, bytes: &[u8]) -> Self {
 		let len = bytes.len();
 		if len < 1 || len > 75 {
-			panic!(format!("Canot push {} bytes", len));
+			panic!("Canot push {} bytes");
 		}
 
 		let opcode: Opcode = Opcode::from_u8(((Opcode::OP_PUSHBYTES_1 as usize) + len - 1) as u8)
@@ -105,7 +105,7 @@ impl Builder {
 	pub fn return_bytes(mut self, bytes: &[u8]) -> Self {
 		let len = bytes.len();
 		if len < 1 || len > 75 {
-			panic!(format!("Canot push {} bytes", len));
+			panic!("Canot push {} bytes");
 		}
 
 		let opcode: Opcode = Opcode::from_u8(((Opcode::OP_PUSHBYTES_1 as usize) + len - 1) as u8)

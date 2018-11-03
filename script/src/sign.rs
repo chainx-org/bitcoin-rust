@@ -7,15 +7,18 @@ use hash::H256;
 use ser::Stream;
 use chain::{Transaction, TransactionOutput, OutPoint, TransactionInput};
 use {Script, Builder};
+use rstd::prelude::Vec;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Clone, Copy)]
 pub enum SignatureVersion {
 	Base,
 	WitnessV0,
 	ForkId,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Clone, Copy)]
 #[repr(u8)]
 pub enum SighashBase {
 	All = 1,
@@ -31,7 +34,8 @@ impl From<SighashBase> for u32 {
 
 #[cfg_attr(feature="cargo-clippy", allow(doc_markdown))]
 /// Signature hash type. [Documentation](https://en.bitcoin.it/wiki/OP_CHECKSIG#Procedure_for_Hashtype_SIGHASH_SINGLE)
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Clone, Copy)]
 pub struct Sighash {
 	pub base: SighashBase,
 	pub anyone_can_pay: bool,
@@ -92,8 +96,7 @@ impl Sighash {
 		Sighash::new(base, anyone_can_pay, fork_id)
 	}
 }
-
-#[derive(Debug)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct UnsignedTransactionInput {
 	pub previous_output: OutPoint,
 	pub sequence: u32,
@@ -109,7 +112,7 @@ impl From<TransactionInput> for UnsignedTransactionInput {
 	}
 }
 
-#[derive(Debug)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct TransactionInputSigner {
 	pub version: i32,
 	pub inputs: Vec<UnsignedTransactionInput>,
@@ -152,7 +155,11 @@ impl TransactionInputSigner {
 	) -> TransactionInput {
 		let hash = self.signature_hash(input_index, input_amount, script_pubkey, sigversion, sighash);
 
-		let mut signature: Vec<u8> = keypair.private().sign(&hash).unwrap().into();
+        let signature = keypair.private().sign(&hash);
+		let mut signature: Vec<u8> = match signature {
+            Ok(signature) => signature.into(),
+            Err(_) => Vec::new(),
+        };
 		signature.push(sighash as u8);
 		let script_sig = Builder::default()
 			.push_data(&signature)
@@ -164,7 +171,7 @@ impl TransactionInputSigner {
 			previous_output: unsigned_input.previous_output.clone(),
 			sequence: unsigned_input.sequence,
 			script_sig: script_sig.to_bytes(),
-			script_witness: vec![],
+			script_witness: Vec::new(),
 		}
 	}
 
@@ -181,12 +188,14 @@ impl TransactionInputSigner {
 
 		let inputs = if sighash.anyone_can_pay {
 			let input = &self.inputs[input_index];
-			vec![TransactionInput {
+            let mut vec = Vec::new();
+			vec.push(TransactionInput {
 				previous_output: input.previous_output.clone(),
 				script_sig: script_pubkey.to_bytes(),
 				sequence: input.sequence,
-				script_witness: vec![],
-			}]
+				script_witness: Vec::new(),
+			});
+            vec
 		} else {
 			self.inputs.iter()
 				.enumerate()
@@ -201,7 +210,7 @@ impl TransactionInputSigner {
 						SighashBase::Single | SighashBase::None if n != input_index => 0,
 						_ => input.sequence,
 					},
-					script_witness: vec![],
+					script_witness: Vec::new(),
 				})
 				.collect()
 		};

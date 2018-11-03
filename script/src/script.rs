@@ -1,9 +1,12 @@
 //! Serialized script, used inside transaction inputs and outputs.
 
-use std::{fmt, ops};
+#[cfg(feature = "std")]
+use std::fmt;
+use rstd::ops;
 use bytes::Bytes;
 use keys::{self, AddressHash, Public};
 use {Opcode, Error};
+use rstd::prelude::Vec;
 
 /// Maximum number of bytes pushable to the stack
 pub const MAX_SCRIPT_ELEMENT_SIZE: usize = 520;
@@ -18,7 +21,8 @@ pub const MAX_PUBKEYS_PER_MULTISIG: usize = 20;
 pub const MAX_SCRIPT_SIZE: usize = 10000;
 
 /// Classified script type
-#[derive(PartialEq, Debug)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq)]
 pub enum ScriptType {
 	NonStandard,
 	PubKey,
@@ -31,7 +35,8 @@ pub enum ScriptType {
 }
 
 /// Address from Script
-#[derive(PartialEq, Debug)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq)]
 pub struct ScriptAddress {
 	/// The type of the address.
 	pub kind: keys::Type,
@@ -58,11 +63,13 @@ impl ScriptAddress {
 }
 
 /// Serialized script, used inside transaction inputs and outputs.
-#[derive(PartialEq, Debug)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq)]
 pub struct Script {
 	data: Bytes,
 }
 
+#[cfg(feature = "std")]
 impl From<&'static str> for Script {
 	fn from(s: &'static str) -> Self {
 		Script::new(s.into())
@@ -410,7 +417,7 @@ impl Script {
 	pub fn extract_destinations(&self) -> Result<Vec<ScriptAddress>, keys::Error> {
 		match self.script_type() {
 			ScriptType::NonStandard => {
-				Ok(vec![])
+				Ok(Vec::new())
 			},
 			ScriptType::PubKey => {
 				Public::from_slice(match self.data[0] {
@@ -418,17 +425,17 @@ impl Script {
 					x if x == Opcode::OP_PUSHBYTES_65 as u8 => &self.data[1..66],
 					_ => unreachable!(), // because we are relying on script_type() checks here
 				})
-				.map(|public| vec![ScriptAddress::new_p2pkh(public.address_hash())])
+				.map(|public| { let mut vec = Vec::new(); vec.push(ScriptAddress::new_p2pkh(public.address_hash())); vec })
 			},
 			ScriptType::PubKeyHash => {
-				Ok(vec![
-					ScriptAddress::new_p2pkh(self.data[3..23].into()),
-				])
+                let mut vec = Vec::new();
+		        vec.push(ScriptAddress::new_p2pkh(self.data[3..23].into()));
+				Ok(vec)
 			},
 			ScriptType::ScriptHash => {
-				Ok(vec![
-					ScriptAddress::new_p2sh(self.data[2..22].into()),
-				])
+                let mut vec = Vec::new();
+			    vec.push(ScriptAddress::new_p2sh(self.data[2..22].into()));
+				Ok(vec)
 			},
 			ScriptType::Multisig => {
 				let mut addresses: Vec<ScriptAddress> = Vec::new();
@@ -443,13 +450,13 @@ impl Script {
 				Ok(addresses)
 			},
 			ScriptType::NullData => {
-				Ok(vec![])
+				Ok(Vec::new())
 			},
 			ScriptType::WitnessScript => {
-				Ok(vec![]) // TODO
+				Ok(Vec::new()) // TODO
 			},
 			ScriptType::WitnessKey => {
-				Ok(vec![]) // TODO
+				Ok(Vec::new()) // TODO
 			},
 		}
 	}
@@ -548,6 +555,7 @@ fn read_usize(data: &[u8], size: usize) -> Result<usize, Error> {
 	Ok(result)
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Script {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut pc = 0;
@@ -614,6 +622,7 @@ mod tests {
 		assert!(!script2.is_pay_to_witness_script_hash());
 	}
 
+    #[cfg(feature = "std")]
 	#[test]
 	fn test_script_debug() {
 		use std::fmt::Write;

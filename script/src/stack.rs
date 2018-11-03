@@ -1,5 +1,7 @@
-use std::ops;
+
+use rstd::ops;
 use Error;
+use rstd::prelude::Vec;
 
 #[derive(Debug, Default, PartialEq, Clone)]
 pub struct Stack<T> {

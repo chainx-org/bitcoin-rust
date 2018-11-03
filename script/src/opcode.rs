@@ -1,4 +1,5 @@
 //! Script opcodes.
+#[cfg(feature = "std")]
 use std::fmt;
 use flags::VerificationFlags;
 
@@ -215,6 +216,7 @@ pub enum Opcode {
 	OP_NOP10 = 0xb9,
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Opcode {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		fmt::Debug::fmt(self, f)

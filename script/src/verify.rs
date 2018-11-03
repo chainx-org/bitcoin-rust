@@ -38,7 +38,7 @@ impl SignatureChecker for NoopSignatureChecker {
 	}
 }
 
-#[derive(Debug)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct TransactionSignatureChecker {
 	pub signer: TransactionInputSigner,
 	pub input_index: usize,

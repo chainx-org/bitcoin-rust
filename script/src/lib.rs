@@ -1,12 +1,13 @@
 // Copyright 2018 Chainpool
 
-#[macro_use]
-extern crate log;
+#![cfg_attr(not(feature = "std"), no_std)]
+
 extern crate bitcrypto as crypto;
 extern crate chain;
 extern crate keys;
 extern crate primitives;
 extern crate serialization as ser;
+extern crate sr_std as rstd;
 
 mod builder;
 mod error;

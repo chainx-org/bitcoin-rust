@@ -1182,9 +1182,9 @@ dependencies = [
  "bitcrypto 0.1.0",
  "chain 0.1.0",
  "keys 0.1.0",
- "log 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "primitives 0.1.0",
  "serialization 0.1.0",
+ "sr-std 0.1.0 (git+https://github.com/chainx-org/sr-std)",
 ]
 
 [[package]]

@@ -1,8 +1,9 @@
 //! Script numeric
 
-use std::ops;
+use rstd::ops;
 use bytes::Bytes;
 use Error;
+use rstd::prelude::Vec;
 
 /// Script numeric
 ///
@@ -12,7 +13,8 @@ use Error;
 /// numeric operation). `CScriptNum` enforces those semantics by storing results as
 /// an int64 and allowing out-of-range values to be returned as a vector of bytes but
 /// throwing an exception if arithmetic is done or the result is interpreted as an integer.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Num {
 	value: i64,
 }
@@ -164,7 +166,7 @@ impl Num {
 			return Bytes::default();
 		}
 
-		let mut result = vec![];
+		let mut result = Vec::new();
 		let negative = self.value < 0;
 		let mut absvalue = if negative {
 			(-self.value) as u64

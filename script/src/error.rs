@@ -1,5 +1,6 @@
 //! Interpreter errors
 
+#[cfg(feature = "std")]
 use std::fmt;
 use Opcode;
 
@@ -67,6 +68,7 @@ pub enum Error {
 	WitnessPubKeyType,
 }
 
+#[cfg(feature = "std")]
 impl fmt::Display for Error {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match *self {
