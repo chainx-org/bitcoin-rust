@@ -15,7 +15,6 @@ use base58::{ToBase58, FromBase58};
 use crypto::checksum;
 use network::Network;
 use {Error, AddressHash};
-#[cfg(feature = "std")]
 use DisplayLayout;
 
 /// There are two address formats currently in use.
@@ -51,10 +50,8 @@ pub struct Address {
 	pub hash: AddressHash,
 }
 
-#[cfg(feature = "std")]
 pub struct AddressDisplayLayout([u8; 25]);
 
-#[cfg(feature = "std")]
 impl Deref for AddressDisplayLayout {
 	type Target = [u8];
 
@@ -63,7 +60,6 @@ impl Deref for AddressDisplayLayout {
 	}
 }
 
-#[cfg(feature = "std")]
 impl DisplayLayout for Address {
 	type Target = AddressDisplayLayout;
 
