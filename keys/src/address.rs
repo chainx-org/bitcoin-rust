@@ -21,7 +21,7 @@ use DisplayLayout;
 /// There are two address formats currently in use.
 /// https://bitcoin.org/en/developer-reference#address-conversion
 #[cfg_attr(feature = "std", derive(Debug))]
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Encode, Decode)]
 pub enum Type {
 	/// Pay to PubKey Hash
 	/// Common P2PKH which begin with the number 1, eg: 1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2.
@@ -33,9 +33,15 @@ pub enum Type {
 	P2SH,
 }
 
+impl Default for Type {
+    fn default() -> Type {
+        Type::P2PKH
+    }
+}
+
 /// `AddressHash` with network identifier and format type
 #[cfg_attr(feature = "std", derive(Debug))]
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Encode, Decode, Default)]
 pub struct Address {
 	/// The type of the address.
 	pub kind: Type,
@@ -136,7 +142,7 @@ impl From<&'static str> for Address {
 #[cfg(test)]
 mod tests {
 	use network::Network;
-	use super::{Address, Type};
+	use super::{Address, Type, DisplayLayout};
 
 	#[test]
 	fn test_address_to_string() {
@@ -159,4 +165,36 @@ mod tests {
 
 		assert_eq!(address, "16meyfSoQV6twkAAxPe51RtMVz7PGRmWna".into());
 	}
+
+    #[test]
+    fn test_layout() {
+        let v = &[
+            111,
+            41,
+            168,
+            159,
+            89,
+            51,
+            97,
+            179,
+            153,
+            104,
+            9,
+            74,
+            184,
+            193,
+            251,
+            6,
+            131,
+            166,
+            121,
+            3,
+            1,
+            241,
+            112,
+            101,
+            146,
+        ];
+        Address::from_layout(v).unwrap();
+    }
 }
