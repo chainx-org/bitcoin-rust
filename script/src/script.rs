@@ -151,6 +151,54 @@ impl Script {
 			self.data[1] == Opcode::OP_PUSHBYTES_20 as u8
 	}
 
+    pub fn parse_redeem_script(&self) -> Option<(Vec<Bytes>, u32, u32)> { // get Vec<public> , m , n
+        if self.data.len() < 3 {
+            return None;
+        }
+
+        let siglen = match self.get_opcode(0) {
+            Ok(Opcode::OP_0) => 0,
+            Ok(o) if o >= Opcode::OP_1 && o <= Opcode::OP_16 => o as u8 - (Opcode::OP_1 as u8 - 1),
+            _ => return None,
+        };
+
+        let keylen = match self.get_opcode(self.data.len() - 2) {
+            Ok(Opcode::OP_0) => 0,
+            Ok(o) if o >= Opcode::OP_1 && o <= Opcode::OP_16 => o as u8 - (Opcode::OP_1 as u8 - 1),
+            _ => return None,
+        };
+
+        if siglen > keylen {
+            return None;
+        }
+
+        if self.data[self.data.len() - 1] != Opcode::OP_CHECKMULTISIG as u8 {
+            return None;
+        }
+
+        let mut pc = 1;
+        let mut pubkeys: Vec<Bytes> = Vec::new();
+        while pc < self.len() - 2 {
+            let instruction = match self.get_instruction(pc) {
+                Ok(i) => i,
+                _ => return None,
+            };
+
+            match instruction.opcode {
+                Opcode::OP_PUSHBYTES_33 |
+                Opcode::OP_PUSHBYTES_65 => {},
+                _ => return None,
+            }
+            let data = instruction.data.expect(
+                "this method depends on previous check in script_type()",
+            );
+            pubkeys.push(data.into());
+
+            pc += instruction.step;
+        }
+        return Some((pubkeys, siglen as u32, keylen as u32));
+    }
+
 	/// Parse witness program. Returns Some(witness program version, code) or None if not a witness program.
 	pub fn parse_witness_program(&self) -> Option<(u8, &[u8])> {
 		if self.data.len() < 4 || self.data.len() > 42 || self.data.len() != self.data[1] as usize + 2 {
@@ -177,7 +225,6 @@ impl Script {
 		if self.data.len() < 3 {
 			return false;
 		}
-
 		let siglen = match self.get_opcode(0) {
 			Ok(Opcode::OP_0) => 0,
 			Ok(o) if o >= Opcode::OP_1 && o <= Opcode::OP_16 => o as u8 - (Opcode::OP_1 as u8 - 1),
@@ -251,6 +298,21 @@ impl Script {
 		result.extend_from_slice(&self.data[current..]);
 		result.into()
 	}
+
+    pub fn extract_rear(&self, key: char) -> Vec<u8> {
+        let key = key as u8;
+        let mut result = Vec::new();
+        let end = self.data.len();
+        let mut current = 0;
+        while current < end {
+            if self.data[current] == key {
+                break;
+            }
+            current += 1;
+        }
+        result.extend_from_slice(&self.data[current + 1..]);
+        result
+    }
 
 	pub fn get_opcode(&self, position: usize) -> Result<Opcode, Error> {
 		Opcode::from_u8(self.data[position]).ok_or(Error::BadOpcode)
@@ -413,6 +475,26 @@ impl Script {
 		}
 		return 1;
 	}
+
+    pub fn extract_multi_scriptsig(&self) -> Result<(Vec<Bytes>, Script), keys::Error> {
+        //[sig], redeem
+        let mut pc = 1;
+        let mut vec: Vec<Bytes> = Vec::new();
+        while pc < self.len() - 2 {
+            let instruction = self.get_instruction(pc).expect(
+                "this method depends on previous check in script_type()",
+            );
+            let data = instruction.data.expect(
+                "this method depends on previous check in script_type()",
+            );
+            vec.push(data.into());
+            pc += instruction.step;
+        }
+        if let Some(script) = vec.pop() {
+            return Ok((vec, script.into()));
+        }
+        return Err(keys::Error::InvalidSignature);
+    }
 
 	pub fn extract_destinations(&self) -> Result<Vec<ScriptAddress>, keys::Error> {
 		match self.script_type() {
@@ -595,8 +677,8 @@ pub fn is_witness_commitment_script(script: &[u8]) -> bool {
 #[cfg(test)]
 mod tests {
 	use {Builder, Opcode};
-	use super::{Script, ScriptType, ScriptAddress, MAX_SCRIPT_ELEMENT_SIZE};
 	use keys::{Address, Public};
+    use super::*;
 
 	#[test]
 	fn test_is_pay_to_script_hash() {
@@ -811,4 +893,47 @@ OP_ADD
 		assert_eq!(script.script_type(), ScriptType::ScriptHash);
 		assert_eq!(script.num_signatures_required(), 1);
 	}
+
+    const redeem: &'static str = "52210257aff1270e3163aaae9d972b3d09a2385e0d4877501dbeca3ee045f8de00d21c2103fd58c689594b87bbe20a9a00091d074dc0d9f49a988a7ad4c2575adeda1b507c2102bb2a5aa53ba7c0d77bdd86bb9553f77dd0971d3a6bb6ad609787aa76eb17b6b653ae";
+    const scriptsig1: &'static str = "00483045022100c0076941e39126f1bd0102d6df278470802ca8b694f8e39467121dc9ecc4d46802204ab7e3128bd0a93a30d1d5ea4db57cc8ba2d4c39172c2d2e536787e0b152bffe014c6952210257aff1270e3163aaae9d972b3d09a2385e0d4877501dbeca3ee045f8de00d21c2103fd58c689594b87bbe20a9a00091d074dc0d9f49a988a7ad4c2575adeda1b507c2102bb2a5aa53ba7c0d77bdd86bb9553f77dd0971d3a6bb6ad609787aa76eb17b6b653ae";
+    const scriptsig2: &'static str = "00483045022100c0076941e39126f1bd0102d6df278470802ca8b694f8e39467121dc9ecc4d46802204ab7e3128bd0a93a30d1d5ea4db57cc8ba2d4c39172c2d2e536787e0b152bffe014730440220731394ffbf7d068393a2b6146e09f16bd9e39c16d04f38461a4c6991a725609202202633acd7cbf14883736f8e6376aa9090d0adacf73bc76ff5f95dca069caad593014c6952210257aff1270e3163aaae9d972b3d09a2385e0d4877501dbeca3ee045f8de00d21c2103fd58c689594b87bbe20a9a00091d074dc0d9f49a988a7ad4c2575adeda1b507c2102bb2a5aa53ba7c0d77bdd86bb9553f77dd0971d3a6bb6ad609787aa76eb17b6b653ae";
+    const sig1: &'static str = "3045022100c0076941e39126f1bd0102d6df278470802ca8b694f8e39467121dc9ecc4d46802204ab7e3128bd0a93a30d1d5ea4db57cc8ba2d4c39172c2d2e536787e0b152bffe01";
+    const sig2: &'static str = "30440220731394ffbf7d068393a2b6146e09f16bd9e39c16d04f38461a4c6991a725609202202633acd7cbf14883736f8e6376aa9090d0adacf73bc76ff5f95dca069caad59301";
+    #[test]
+    fn redeem_script() {
+        let script: Script = redeem.into();
+        assert_eq!(script.is_multisig_script(), true);
+    }
+
+    #[test]
+    fn input_1() {
+        let script: Script = scriptsig1.into();
+        let (sigs, dem) = script.extract_multi_scriptsig().unwrap();
+        let sig_bytes: Bytes = sig1.into();
+        assert_eq!(sig_bytes, sigs[0]);
+        let script: Script = redeem.into();
+        assert_eq!(script, dem);
+        assert_eq!(sigs.len(), 1);
+    }
+    #[test]
+    fn input_2() {
+        let script: Script = scriptsig2.into();
+        let (sigs, dem) = script.extract_multi_scriptsig().unwrap();
+        let sig_bytes1: Bytes = sig1.into();
+        assert_eq!(sig_bytes1, sigs[0]);
+        let sig_bytes2: Bytes = sig2.into();
+        assert_eq!(sig_bytes2, sigs[1]);
+        let script: Script = redeem.into();
+        assert_eq!(script, dem);
+        assert_eq!(sigs.len(), 2);
+    }
+
+    #[test]
+    fn parse_redeem() {
+        let script: Script = redeem.into();
+        let (keys, siglen, keylen) = script.parse_redeem_script().unwrap();
+        assert_eq!(siglen, 2);
+        assert_eq!(keylen, 3);
+        assert_eq!(keys.len(), 3);
+    }
 }

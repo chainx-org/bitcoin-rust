@@ -9,13 +9,13 @@ extern crate primitives;
 extern crate serialization as ser;
 extern crate sr_std as rstd;
 
-mod builder;
+pub mod builder;
 mod error;
 mod flags;
 mod interpreter;
 mod num;
 mod opcode;
-mod script;
+pub mod script;
 mod sign;
 mod stack;
 mod verify;
