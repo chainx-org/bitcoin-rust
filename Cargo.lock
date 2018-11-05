@@ -612,6 +612,10 @@ dependencies = [
  "primitives 0.1.0",
  "rand 0.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_bytes 0.10.4 (git+https://github.com/serde-rs/bytes)",
+ "serde_derive 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serialization 0.1.0",
  "sr-std 0.1.0 (git+https://github.com/chainx-org/sr-std)",
 ]
 
