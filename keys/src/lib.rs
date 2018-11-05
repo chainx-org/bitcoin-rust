@@ -14,6 +14,12 @@ extern crate sr_std as rstd;
 #[macro_use]
 extern crate parity_codec_derive;
 extern crate parity_codec as codec;
+extern crate serialization as ser;
+#[cfg(feature = "std")]
+extern crate serde_bytes;
+#[cfg(feature = "std")]
+#[macro_use]
+extern crate serde_derive;
 
 pub mod generator;
 mod address;

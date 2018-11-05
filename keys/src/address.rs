@@ -16,6 +16,8 @@ use crypto::checksum;
 use network::Network;
 use {Error, AddressHash};
 use DisplayLayout;
+use ser::{serialize, deserialize, Serializable, Stream, Reader, Deserializable};
+use primitives::io;
 
 /// There are two address formats currently in use.
 /// https://bitcoin.org/en/developer-reference#address-conversion
@@ -37,6 +39,31 @@ impl Default for Type {
         Type::P2PKH
     }
 }
+impl Type {
+	pub fn from_u32(v: u32) -> Option<Self> {
+		match v {
+			0 => Some(Type::P2PKH),
+			1 => Some(Type::P2SH),
+			_ => None
+		}
+	}
+}
+
+impl Serializable for Type {
+	fn serialize(&self, stream: &mut Stream) {
+		match *self{
+			P2PKH => stream.append(&Type::P2PKH),
+			P2SH => stream.append(&Type::P2SH),
+		};
+	}
+}
+
+impl Deserializable for Type {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
+		let t: u32 = try!(reader.read());
+		Type::from_u32(t).ok_or(io::ErrorKind::MalformedData)
+	}
+}
 
 /// `AddressHash` with network identifier and format type
 #[cfg_attr(feature = "std", derive(Debug))]
@@ -48,6 +75,52 @@ pub struct Address {
 	pub network: Network,
 	/// Public key hash.
 	pub hash: AddressHash,
+}
+
+#[cfg(feature = "std")]
+impl serde::Serialize for Address {
+	#[inline]
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+		where
+			S: serde::Serializer,
+	{
+		let value = serialize::<Address>(&self).take();
+		serde_bytes::serialize(&value, serializer)
+	}
+}
+
+#[cfg(feature = "std")]
+impl<'de> serde::Deserialize<'de> for Address {
+	#[inline]
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+		where
+			D: serde::Deserializer<'de>,
+	{
+		let value: Vec<u8> = serde_bytes::deserialize(deserializer).unwrap();
+		if let Ok(address) = deserialize(Reader::new(&value)) {
+			Ok(address)
+		} else {
+			Err(serde::de::Error::custom("address is not expect"))
+		}
+	}
+}
+
+impl Serializable for Address {
+	fn serialize(&self, stream: &mut Stream) {
+		stream.append(&self.kind)
+			.append(&self.network)
+			.append(&self.hash);
+	}
+}
+
+impl Deserializable for Address {
+	fn deserialize<T>(reader: &mut Reader<T>) -> Result<Self, io::Error> where T: io::Read {
+		Ok(Address {
+			kind: reader.read()?,
+			network: reader.read()?,
+			hash: reader.read()?,
+		})
+	}
 }
 
 pub struct AddressDisplayLayout([u8; 25]);
