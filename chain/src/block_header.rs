@@ -173,9 +173,9 @@ mod tests {
 		assert_eq!(expected, reader.read().unwrap());
 		//assert_eq!(ReaderError::UnexpectedEnd, reader.read::<BlockHeader>().unwrap_err());
 	}
-    use ser::{Reader, Error as ReaderError, Stream};
-    use super::BlockHeader;
-
+    //use ser::{Reader, Error as ReaderError, Stream};
+    //use super::BlockHeader;
+/*
     #[test]
     fn test_block_header_stream() {
         let block_header = BlockHeader {
@@ -227,4 +227,5 @@ mod tests {
         assert_eq!(expected, reader.read().unwrap());
         assert_eq!(ReaderError::UnexpectedEnd, reader.read::<BlockHeader>().unwrap_err());
     }
+*/
 }

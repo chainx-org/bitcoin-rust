@@ -1,6 +1,6 @@
 // Copyright 2018 Chainpool
 
-//use rstd::iter::repeat;
+use std::iter::repeat;
 
 pub trait Digest {
     fn input(&mut self, input: &[u8]);
@@ -14,11 +14,11 @@ pub trait Digest {
 
     fn block_size(&self) -> usize;
 
-/*
+
     fn input_str(&mut self, input: &str) {
         self.input(input.as_bytes());
     }
-    
+
     fn result_str(&mut self) -> String {
         use serialize::hex::ToHex;
 
@@ -26,5 +26,5 @@ pub trait Digest {
         self.result(&mut buf);
         buf[..].to_hex()
     }
-*/
+
 }

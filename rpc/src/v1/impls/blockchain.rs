@@ -393,6 +393,13 @@ pub mod tests {
                 coinbase: false,
             })
         }
+
+        fn transaction_out(&self, prev_out: OutPoint) -> Option<TransactionOutput>{
+            Some(TransactionOutput {
+                value: 1,
+                script_pubkey:"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".into(),
+            })
+        }
     }
 
     impl BlockChainClientCoreApi for ErrorBlockChainClientCore {
@@ -423,6 +430,8 @@ pub mod tests {
         fn verbose_transaction_out(&self, prev_out: OutPoint) -> Result<GetTxOutResponse, Error> {
             Err(block_not_found(prev_out.hash))
         }
+
+        fn transaction_out(&self, prev_out: OutPoint) -> Option<TransactionOutput> { None }
     }
 
     #[test]
@@ -630,7 +639,7 @@ pub mod tests {
         let mut handler = IoHandler::new();
         handler.extend_with(client.to_delegate());
 
-        let expected = r#"{"jsonrpc":"2.0","result":"010000004860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000000d5fdcc541e25de1c7a5addedf24858b8bb665c9f36ef744ee42c316022c90f9bb0bc6649ffff001d08d2bd610101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d010bffffffff0100f2052a010000004341047211a824f55b505228e4c3d5194c1fcfaa15a456abdf37f9b9d97a4040afc073dee6c89064984f03385237d92167c13e236446b417ab79a0fcae412ae3316b77ac00000000","id":1}"#;
+        let expected = r#"{"jsonrpc":"2.0","result":{"Raw":"010000004860eb18bf1b1620e37e9490fc8a427514416fd75159ab86688e9a8300000000d5fdcc541e25de1c7a5addedf24858b8bb665c9f36ef744ee42c316022c90f9bb0bc6649ffff001d08d2bd610101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d010bffffffff0100f2052a010000004341047211a824f55b505228e4c3d5194c1fcfaa15a456abdf37f9b9d97a4040afc073dee6c89064984f03385237d92167c13e236446b417ab79a0fcae412ae3316b77ac00000000"},"id":1}"#;
 
         let sample = handler
             .handle_request_sync(
@@ -645,7 +654,7 @@ pub mod tests {
             .unwrap();
         assert_eq!(&sample, expected);
 
-        // try without optional parameter
+        // try without optional parameterverbose_block_success
         let sample = handler
             .handle_request_sync(
                 &(r#"
@@ -699,7 +708,7 @@ pub mod tests {
             )
             .unwrap();
 
-        assert_eq!(&sample, r#"{"jsonrpc":"2.0","result":{"bits":486604799,"chainwork":"0","confirmations":1,"difficulty":1.0,"hash":"000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd","height":2,"mediantime":null,"merkleroot":"9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5","nextblockhash":null,"nonce":1639830024,"previousblockhash":"00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048","size":215,"strippedsize":215,"time":1231469744,"tx":["9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5"],"version":1,"versionHex":"1","weight":215},"id":1}"#);
+        assert_eq!(&sample, r#"{"jsonrpc":"2.0","result":{"Verbose":{"bits":486604799,"chainwork":"0","confirmations":1,"difficulty":1.0,"hash":"000000006a625f06636b8bb6ac7b960a8d03705d1ace08b1a19da3fdcc99ddbd","height":2,"mediantime":null,"merkleroot":"9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5","nextblockhash":null,"nonce":1639830024,"previousblockhash":"00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048","size":215,"strippedsize":215,"time":1231469744,"tx":["9b0fc92260312ce44e74ef369f5c66bbb85848f2eddd5a7a1cde251e54ccfdd5"],"version":1,"versionHex":"1","weight":215}},"id":1}"#);
     }
 
     #[test]

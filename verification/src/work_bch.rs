@@ -176,7 +176,7 @@ mod tests {
 	use std::collections::HashMap;
 	use primitives::bytes::Bytes;
 	use primitives::hash::H256;
-	use primitives::bigint::U256;
+	use primitives::U256;
 	use network::{Network, ConsensusParams, BitcoinCashConsensusParams, ConsensusFork};
 	use storage::{BlockHeaderProvider, BlockRef};
 	use chain::BlockHeader;

@@ -2,6 +2,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate rand;
+extern crate rustc_serialize as serialize;
 extern crate primitives;
 #[cfg(feature = "std")]
 extern crate siphasher;
@@ -14,6 +16,9 @@ pub mod sha1;
 pub mod sha2;
 pub mod ripemd160;
 pub mod fixed_buffer;
+pub mod buffer;
+pub mod cryptoutil;
+pub mod symmetriccipher;
 mod simd;
 
 pub use digest::Digest;

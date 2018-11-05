@@ -144,7 +144,9 @@ pub fn find_solution<T>(block: &BlockTemplate, mut coinbase_transaction_builder:
 
 #[cfg(test)]
 mod tests {
-	use primitives::bigint::{U256, Uint};
+	//use primitives::bigint::{U256, Uint};
+	use std::sync::Arc;
+	use primitives::U256;
 	use primitives::bytes::Bytes;
 	use primitives::hash::H256;
 	use block_assembler::BlockTemplate;
