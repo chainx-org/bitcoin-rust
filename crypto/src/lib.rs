@@ -195,7 +195,7 @@ pub fn checksum(data: &[u8]) -> H32 {
 #[cfg(test)]
 mod tests {
 	use primitives::bytes::Bytes;
-	use super::{ripemd160, sha1, sha256, dhash160, dhash256, siphash24, checksum};
+	use super::{ripemd160, sha1, sha256, dhash160, dhash256, siphash24,checksum};
 
 	#[test]
 	fn test_ripemd160() {

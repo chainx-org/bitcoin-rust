@@ -415,6 +415,8 @@ mod tests {
     use cryptoutil::test::test_digest_1million_random;
     use digest::Digest;
     use ripemd160::Ripemd160;
+    use rstd::boxed::Box;
+    use rstd::prelude::Vec;
 
     #[derive(Clone)]
     struct Test {

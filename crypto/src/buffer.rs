@@ -4,8 +4,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::cmp;
-
+use rstd::cmp;
+use rstd::prelude::Vec;
 use cryptoutil;
 
 #[derive(Clone,Copy)]

@@ -6,6 +6,7 @@
 
 use buffer::{BufferResult, RefReadBuffer, RefWriteBuffer};
 use cryptoutil::symm_enc_or_dec;
+use rstd::boxed::Box;
 
 pub trait BlockEncryptor {
     fn block_size(&self) -> usize;

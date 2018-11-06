@@ -8,9 +8,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std;
-use std::{io, mem};
-use std::ptr;
+use rstd;
+//use rstd::{io, mem};
+use rstd::mem;
+use rstd::ptr;
+use primitives::io;
 
 use buffer::{ReadBuffer, WriteBuffer, BufferResult};
 use buffer::BufferResult::{BufferUnderflow, BufferOverflow};
@@ -210,34 +212,34 @@ pub fn zero(dst: &mut [u8]) {
 /// An extension trait to implement a few useful serialization
 /// methods on types that implement Write
 pub trait WriteExt {
-    fn write_u8(&mut self, val: u8) -> io::Result<()>;
-    fn write_u32_le(&mut self, val: u32) -> io::Result<()>;
-    fn write_u32_be(&mut self, val: u32) -> io::Result<()>;
-    fn write_u64_le(&mut self, val: u64) -> io::Result<()>;
-    fn write_u64_be(&mut self, val: u64) -> io::Result<()>;
+    fn write_u8(&mut self, val: u8) -> io::Result<(),io::Error>;
+    fn write_u32_le(&mut self, val: u32) -> io::Result<(),io::Error>;
+    fn write_u32_be(&mut self, val: u32) -> io::Result<(),io::Error>;
+    fn write_u64_le(&mut self, val: u64) -> io::Result<(),io::Error>;
+    fn write_u64_be(&mut self, val: u64) -> io::Result<(),io::Error>;
 }
 
 impl <T> WriteExt for T where T: io::Write {
-    fn write_u8(&mut self, val: u8) -> io::Result<()> {
+    fn write_u8(&mut self, val: u8) -> io::Result<(),io::Error> {
         let buff = [val];
         self.write_all(&buff)
     }
-    fn write_u32_le(&mut self, val: u32) -> io::Result<()> {
+    fn write_u32_le(&mut self, val: u32) -> io::Result<(),io::Error> {
         let mut buff = [0u8; 4];
         write_u32_le(&mut buff, val);
         self.write_all(&buff)
     }
-    fn write_u32_be(&mut self, val: u32) -> io::Result<()> {
+    fn write_u32_be(&mut self, val: u32) -> io::Result<(),io::Error> {
         let mut buff = [0u8; 4];
         write_u32_be(&mut buff, val);
         self.write_all(&buff)
     }
-    fn write_u64_le(&mut self, val: u64) -> io::Result<()> {
+    fn write_u64_le(&mut self, val: u64) -> io::Result<(),io::Error> {
         let mut buff = [0u8; 8];
         write_u64_le(&mut buff, val);
         self.write_all(&buff)
     }
-    fn write_u64_be(&mut self, val: u64) -> io::Result<()> {
+    fn write_u64_be(&mut self, val: u64) -> io::Result<(),io::Error> {
         let mut buff = [0u8; 8];
         write_u64_be(&mut buff, val);
         self.write_all(&buff)
@@ -251,7 +253,7 @@ pub fn symm_enc_or_dec<S: SynchronousStreamCipher, R: ReadBuffer, W: WriteBuffer
         input: &mut R,
         output: &mut W) ->
         Result<BufferResult, SymmetricCipherError> {
-    let count = std::cmp::min(input.remaining(), output.remaining());
+    let count = rstd::cmp::min(input.remaining(), output.remaining());
     c.process(input.take_next(count), output.take_next(count));
     if input.is_empty() {
         Ok(BufferUnderflow)
@@ -510,8 +512,8 @@ impl <T: FixedBuffer> StandardPadding for T {
 
 #[cfg(test)]
 pub mod test {
-    use std;
-    use std::iter::repeat;
+    use rstd;
+    use rstd::iter::repeat;
 
     use rand::IsaacRng;
     use rand::distributions::{IndependentSample, Range};
@@ -553,7 +555,7 @@ pub mod test {
     #[test]
     #[should_panic]
     fn test_add_bytes_to_bits_overflow() {
-        add_bytes_to_bits(std::u64::MAX, 1);
+        add_bytes_to_bits(u64::max_value(), 1);
     }
 
     // A normal addition - no overflow occurs (fast path)
@@ -565,7 +567,7 @@ pub mod test {
     // The low order value overflows into the high order value
     #[test]
     fn test_add_bytes_to_bits_tuple_ok2() {
-        assert!(add_bytes_to_bits_tuple((5, std::u64::MAX), 1) == (6, 7));
+        assert!(add_bytes_to_bits_tuple((5, u64::max_value()), 1) == (6, 7));
     }
 
     // The value to add is too large to be converted into bits without overflowing its type
@@ -578,7 +580,7 @@ pub mod test {
     #[test]
     #[should_panic]
     fn test_add_bytes_to_bits_tuple_overflow() {
-        add_bytes_to_bits_tuple((std::u64::MAX, std::u64::MAX), 1);
+        add_bytes_to_bits_tuple((u64::max_value(), u64::max_value()), 1);
     }
 
     // The value to add is too large to convert to bytes without overflowing its type, but the high
@@ -586,7 +588,7 @@ pub mod test {
     #[test]
     #[should_panic]
     fn test_add_bytes_to_bits_tuple_overflow2() {
-        let value: u64 = std::u64::MAX;
+        let value: u64 = u64::max_value();
         add_bytes_to_bits_tuple((value - 1, 0), 0x8000000000000000);
     }
 }
