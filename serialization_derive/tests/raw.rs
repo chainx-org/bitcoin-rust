@@ -1,6 +1,7 @@
 extern crate serialization;
 #[macro_use]
 extern crate serialization_derive;
+extern crate primitives;
 
 use serialization::{serialize, deserialize};
 
