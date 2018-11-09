@@ -32,13 +32,13 @@ primitives = { path = "primitives" }
 tokio = "0.1"
 exit-future = "0.1"
 
-[profile.dev]
-debug = true
-panic = 'abort'
+#[profile.dev]
+#debug = true
+#panic = 'abort'
 
-[profile.release]
-debug = true
-panic = 'abort'
+#[profile.release]
+#debug = true
+#panic = 'abort'
 
 [profile.test]
 debug = true
