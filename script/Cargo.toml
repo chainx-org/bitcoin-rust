@@ -12,7 +12,7 @@ primitives = { path = "../primitives", default-features = false }
 serialization = { path = "../serialization", default-features = false }
 
 [features]
-default = []
+default = ["std"]
 std = [
     "bitcrypto/std",
     "chain/std",

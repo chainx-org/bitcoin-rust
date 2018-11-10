@@ -7,10 +7,15 @@ authors = ["debris <marek.kotewicz@gmail.com> & chainpool <http://chainx.org>"]
 siphasher = { version = "0.1.1", optional = true }
 primitives = { path = "../primitives", default-features = false }
 sr-std = { git = "https://github.com/chainx-org/sr-std", default-features = false }
-rand = "^0.3"
-rustc-serialize = "^0.3"
+rand = { version = "^0.3", optional = true }
+rustc-serialize = { version = "^0.3", optional = true }
 
 [features]
 default = ["std"]
-
-std = [ "siphasher", "primitives/std", "sr-std/std", ]
+std = [
+	"siphasher",
+	"rand",
+	"rustc-serialize",
+	"primitives/std",
+	"sr-std/std",
+]

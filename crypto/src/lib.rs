@@ -2,7 +2,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "std")]
 extern crate rand;
+#[cfg(feature = "std")]
 extern crate rustc_serialize as serialize;
 extern crate primitives;
 #[cfg(feature = "std")]
