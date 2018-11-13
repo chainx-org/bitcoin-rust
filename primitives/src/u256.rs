@@ -1,5 +1,9 @@
 // Copyright 2018 Chainpool
 
+use rstd::prelude::Vec;
+#[cfg(not(feature="std"))]
+use rstd::alloc::prelude::ToOwned;
+
 construct_uint!(U256, 4);
 
 impl ::codec::Encode for U256 {
