@@ -314,6 +314,21 @@ impl Script {
         result
     }
 
+	pub fn extract_pre(&self, key: char) -> Vec<u8> {
+		let key = key as u8;
+		let mut result = Vec::new();
+		let end = self.data.len();
+		let mut current = 0;
+		while current < end {
+			if self.data[current] == key {
+				break;
+			}
+			current += 1;
+		}
+		result.extend_from_slice(&self.data[0..current]);
+		result
+	}
+
 	pub fn get_opcode(&self, position: usize) -> Result<Opcode, Error> {
 		Opcode::from_u8(self.data[position]).ok_or(Error::BadOpcode)
 	}
@@ -849,6 +864,17 @@ OP_ADD
 		assert_eq!(script.extract_destinations(), Ok(vec![
 			ScriptAddress::new_p2sh(address),
 		]));
+	}
+
+	#[test]
+	fn test_extract_pre() {
+		let script = Script::from(
+			"chainx:5HnDcuKFCvsR42s8Tz2j2zLHLZAaiHG4VNyJDa7iLRunRuhM"
+				.as_bytes()
+				.to_vec(),
+		);
+		let pre = script.extract_pre(':');
+		assert_eq!(String::from_utf8(pre).unwrap(), "chainx");
 	}
 
 	#[test]
