@@ -34,7 +34,7 @@ macro_rules! impl_uint {
 
 		impl serde::Serialize for $name {
 			fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: serde::Serializer {
-				let as_hex = format!("{}", self.0.to_hex());
+				let as_hex = format!("{:x}", self.0);
 				serializer.serialize_str(&as_hex)
 			}
 		}
