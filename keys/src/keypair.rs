@@ -2,7 +2,7 @@
 
 #[cfg(feature = "std")]
 use std::fmt;
-use secp256k1::key;
+use secp256k1::{curve::Scalar, PublicKey as SecpPublicKey, SecretKey as SecpSecretKey};
 use hash::{H264, H520};
 use network::Network;
 use {Public, Error, Address, Type, Private, Secret};
@@ -38,41 +38,34 @@ impl KeyPair {
 	}
 
 	pub fn from_private(private: Private) -> Result<KeyPair, Error> {
-		let context = &secp256k1::Secp256k1::new();
-		let s: key::SecretKey = try!(key::SecretKey::from_slice(context, &*private.secret));
-		let pub_key = try!(key::PublicKey::from_secret_key(context, &s));
-		let serialized = pub_key.serialize_vec(context, private.compressed);
-
+		let s = SecpSecretKey::parse(&*private.secret)?;
+		let pub_key = SecpPublicKey::from_secret_key(&s);
 		let public = if private.compressed {
 			let mut public = H264::default();
-			public.copy_from_slice(&serialized[0..33]);
+			public.copy_from_slice(&pub_key.serialize_compressed());
 			Public::Compressed(public)
 		} else {
 			let mut public = H520::default();
-			public.copy_from_slice(&serialized[0..65]);
+			public.copy_from_slice(&pub_key.serialize());
 			Public::Normal(public)
 		};
 
-		let keypair = KeyPair {
-			private: private,
-			public: public,
-		};
-
-		Ok(keypair)
+		Ok(KeyPair { private, public })
 	}
 
-	pub fn from_keypair(sec: key::SecretKey, public: key::PublicKey, network: Network) -> Self {
-		let context = &secp256k1::Secp256k1::new();
-		let serialized = public.serialize_vec(context, false);
+	pub fn from_keypair(sec: SecpSecretKey, public: SecpPublicKey, network: Network) -> Self {
+		let sec: Scalar = sec.into();
+		let sec = sec.b32();
+		let serialized = public.serialize();
 		let mut secret = Secret::default();
-		secret.copy_from_slice(&sec[0..32]);
+		secret.copy_from_slice(&sec[..]);
 		let mut public = H520::default();
-		public.copy_from_slice(&serialized[0..65]);
+		public.copy_from_slice(&serialized);
 
 		KeyPair {
 			private: Private {
-				network: network,
-				secret: secret,
+				network,
+				secret,
 				compressed: false,
 			},
 			public: Public::Normal(public),

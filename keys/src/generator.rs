@@ -1,7 +1,7 @@
-
 #[cfg(feature = "std")]
 use rand::os::OsRng;
 use network::Network;
+use secp256k1::{PublicKey, SecretKey};
 use {KeyPair, Error};
 
 #[cfg(feature = "std")]
@@ -24,9 +24,9 @@ impl Random {
 #[cfg(feature = "std")]
 impl Generator for Random {
 	fn generate(&self) -> Result<KeyPair, Error> {
-		let context = &secp256k1::Secp256k1::new();
-		let mut rng = try!(OsRng::new().map_err(|_| Error::FailedKeyGeneration));
-		let (secret, public) = try!(context.generate_keypair(&mut rng));
+		let mut rng = OsRng::new().map_err(|_| Error::FailedKeyGeneration)?;
+		let secret = SecretKey::random(&mut rng);
+		let public = PublicKey::from_secret_key(&secret);
 		Ok(KeyPair::from_keypair(secret, public, self.network))
 	}
 }

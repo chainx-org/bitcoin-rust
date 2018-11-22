@@ -4,8 +4,7 @@
 use std::fmt;
 #[cfg(feature = "std")]
 use std::str::FromStr;
-use secp256k1::key;
-use secp256k1::Message as SecpMessage;
+use secp256k1::{sign, Message as SecpMessage, SecretKey as SecpSecretKey};
 #[cfg(feature = "std")]
 use hex::ToHex;
 #[cfg(feature = "std")]
@@ -29,21 +28,19 @@ pub struct Private {
 
 impl Private {
 	pub fn sign(&self, message: &Message) -> Result<Signature, Error> {
-		let context = &secp256k1::Secp256k1::new();
-		let secret = try!(key::SecretKey::from_slice(context, &*self.secret));
-		let message = try!(SecpMessage::from_slice(&**message));
-		let signature = try!(context.sign(&message, &secret));
-		let data = signature.serialize_der(context);
-		Ok(data.into())
+		let secret = SecpSecretKey::parse(&*self.secret)?;
+		let message = SecpMessage::parse(&**message);
+		let (signature, _) = sign(&message, &secret)?;
+		Ok(signature.serialize_der().as_ref().to_vec().into())
 	}
 
 	pub fn sign_compact(&self, message: &Message) -> Result<CompactSignature, Error> {
-		let context = &secp256k1::Secp256k1::new();
-		let secret = try!(key::SecretKey::from_slice(context, &*self.secret));
-		let message = try!(SecpMessage::from_slice(&**message));
-		let signature = try!(context.sign_recoverable(&message, &secret));
-		let (recovery_id, data) = signature.serialize_compact(context);
-		let recovery_id = recovery_id.to_i32() as u8;
+		let secret = SecpSecretKey::parse(&*self.secret)?;
+		let message = SecpMessage::parse(&**message);
+		let (signature, recovery_id) = sign(&message, &secret)?;
+		let recovery_id = recovery_id.serialize();
+		let data = signature.serialize();
+
 		let mut signature = H520::default();
 		signature[1..65].copy_from_slice(&data[0..64]);
 		if self.compressed {
