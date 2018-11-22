@@ -8,7 +8,7 @@ sr-std = { git = "https://github.com/chainx-org/sr-std", default-features = fals
 rand = { version = "0.4", optional = true }
 rustc-hex = { version = "2", optional = true }
 base58 = { version = "0.1", optional = true }
-eth-secp256k1 = { git = "https://github.com/koushiro/rust-secp256k1", branch = "add_no_std_support", default-features = false }
+libsecp256k1 = { git = "https://github.com/koushiro/libsecp256k1-rs", branch = "support_der_lax" }
 bitcrypto = { path = "../crypto", default-features = false }
 primitives = { path = "../primitives", default-features = false }
 parity-codec = { version = "2.0", default-features = false }
@@ -25,7 +25,6 @@ std = [
     "rand",
     "rustc-hex",
     "base58",
-    "eth-secp256k1/std",
     "bitcrypto/std",
     "parity-codec/std",
     "parity-codec-derive/std",

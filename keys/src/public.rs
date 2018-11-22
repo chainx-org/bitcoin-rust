@@ -1,13 +1,15 @@
-
 #[cfg(feature = "std")]
 use std::fmt;
 use rstd::ops;
-use secp256k1::key;
-use secp256k1::{Message as SecpMessage, RecoveryId, RecoverableSignature, Error as SecpError, Signature as SecpSignature};
+use secp256k1::{
+	recover, verify,
+	Message as SecpMessage, RecoveryId as SecpRecoveryId,
+	PublicKey as SecpPublicKey, Signature as SecpSignature
+};
 #[cfg(feature = "std")]
 use hex::ToHex;
 use crypto::dhash160;
-use hash::{H264, H520};
+use hash::{H264, H512, H520};
 use {AddressHash, Error, CompactSignature, Signature, Message};
 
 /// Secret public key
@@ -41,34 +43,37 @@ impl Public {
 	}
 
 	pub fn verify(&self, message: &Message, signature: &Signature) -> Result<bool, Error> {
-		let context = &secp256k1::Secp256k1::new();
-		let public = try!(key::PublicKey::from_slice(context, self));
-		let mut signature = try!(SecpSignature::from_der_lax(context, signature));
-		signature.normalize_s(context);
-		let message = try!(SecpMessage::from_slice(&**message));
-		match context.verify(&message, &signature, &public) {
-			Ok(_) => Ok(true),
-			Err(SecpError::IncorrectSignature) => Ok(false),
-			Err(x) => Err(x.into()),
-		}
+		let public = match self {
+			Public::Normal(_) => {
+				SecpPublicKey::parse_slice(self, None)?
+			},
+			Public::Compressed(_) => {
+				SecpPublicKey::parse_slice(self, None)?
+			},
+		};
+		let mut signature = SecpSignature::parse_der_lax(&**signature)?;
+		signature.normalize_s();
+		let message = SecpMessage::parse(&**message);
+		Ok(verify(&message, &signature, &public))
 	}
 
 	pub fn recover_compact(message: &Message, signature: &CompactSignature) -> Result<Self, Error> {
-		let context = &secp256k1::Secp256k1::new();
-		let recovery_id = (signature[0] - 27) & 3;
+		let recovery_id = (signature[0] - 27) & 3 as u8;
 		let compressed = (signature[0] - 27) & 4 != 0;
-		let recovery_id = try!(RecoveryId::from_i32(recovery_id as i32));
-		let signature = try!(RecoverableSignature::from_compact(context, &signature[1..65], recovery_id));
-		let message = try!(SecpMessage::from_slice(&**message));
-		let pubkey = try!(context.recover(&message, &signature));
-		let serialized = pubkey.serialize_vec(context, compressed);
+		let recovery_id = SecpRecoveryId::parse(recovery_id)?;
+		let mut sign = H512::default();
+		sign.copy_from_slice(&signature[1..65]);
+		let signature = SecpSignature::parse(&sign);
+		let message = SecpMessage::parse(&**message);
+		let pub_key = recover(&message, &signature, &recovery_id)?;
+
 		let public = if compressed {
 			let mut public = H264::default();
-			public.copy_from_slice(&serialized[0..33]);
+			public.copy_from_slice(&pub_key.serialize_compressed()[..]);
 			Public::Compressed(public)
 		} else {
 			let mut public = H520::default();
-			public.copy_from_slice(&serialized[0..65]);
+			public.copy_from_slice(&pub_key.serialize()[..]);
 			Public::Normal(public)
 		};
 		Ok(public)
