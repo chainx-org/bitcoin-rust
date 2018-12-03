@@ -300,9 +300,12 @@ impl Script {
 	}
 
     pub fn extract_rear(&self, key: char) -> Vec<u8> {
+        if self.data.len() <= 1 {
+            return Vec::new();
+        }
         let key = key as u8;
         let mut result = Vec::new();
-        let end = self.data.len();
+        let end = self.data.len() - 1;
         let mut current = 0;
         while current < end {
             if self.data[current] == key {
