@@ -1,6 +1,5 @@
 //! chainx bitcoin client for chainx relay testnet.
 
-#![feature(extern_prelude)]
 extern crate exit_future;
 #[macro_use]
 extern crate clap;
